@@ -1,0 +1,376 @@
+Array
+(
+    [0] => Array
+        (
+            [id] => 1
+            [name] => T-shirt imprimé colibri
+            [reference] => demo_1
+            [active] => 1
+            [category_default] => 4
+        )
+
+    [1] => Array
+        (
+            [id] => 2
+            [name] => Pull imprimé colibri
+            [reference] => demo_3
+            [active] => 1
+            [category_default] => 5
+        )
+
+    [2] => Array
+        (
+            [id] => 3
+            [name] => Affiche encadrée The best is yet to come
+            [reference] => demo_6
+            [active] => 1
+            [category_default] => 9
+        )
+
+    [3] => Array
+        (
+            [id] => 4
+            [name] => Affiche encadrée The adventure begins
+            [reference] => demo_5
+            [active] => 1
+            [category_default] => 9
+        )
+
+    [4] => Array
+        (
+            [id] => 5
+            [name] => Affiche encadrée Today is a good day
+            [reference] => demo_7
+            [active] => 1
+            [category_default] => 9
+        )
+
+    [5] => Array
+        (
+            [id] => 6
+            [name] => Mug The best is yet to come
+            [reference] => demo_11
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [6] => Array
+        (
+            [id] => 7
+            [name] => Mug The adventure begins
+            [reference] => demo_12
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [7] => Array
+        (
+            [id] => 8
+            [name] => Mug Today is a good day
+            [reference] => demo_13
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [8] => Array
+        (
+            [id] => 9
+            [name] => Coussin renard
+            [reference] => demo_15
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [9] => Array
+        (
+            [id] => 10
+            [name] => Coussin ours brun
+            [reference] => demo_16
+            [active] => 1
+            [category_default] => 8
+        )
+
+)
+
+Array
+(
+    [0] => Array
+        (
+            [id] => 1
+            [name] => T-shirt imprimé colibri
+            [reference] => demo_1
+            [active] => 1
+            [category_default] => 4
+        )
+
+    [1] => Array
+        (
+            [id] => 2
+            [name] => Pull imprimé colibri
+            [reference] => demo_3
+            [active] => 1
+            [category_default] => 5
+        )
+
+    [2] => Array
+        (
+            [id] => 3
+            [name] => Affiche encadrée The best is yet to come
+            [reference] => demo_6
+            [active] => 1
+            [category_default] => 9
+        )
+
+    [3] => Array
+        (
+            [id] => 4
+            [name] => Affiche encadrée The adventure begins
+            [reference] => demo_5
+            [active] => 1
+            [category_default] => 9
+        )
+
+    [4] => Array
+        (
+            [id] => 5
+            [name] => Affiche encadrée Today is a good day
+            [reference] => demo_7
+            [active] => 1
+            [category_default] => 9
+        )
+
+    [5] => Array
+        (
+            [id] => 6
+            [name] => Mug The best is yet to come
+            [reference] => demo_11
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [6] => Array
+        (
+            [id] => 7
+            [name] => Mug The adventure begins
+            [reference] => demo_12
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [7] => Array
+        (
+            [id] => 8
+            [name] => Mug Today is a good day
+            [reference] => demo_13
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [8] => Array
+        (
+            [id] => 9
+            [name] => Coussin renard
+            [reference] => demo_15
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [9] => Array
+        (
+            [id] => 10
+            [name] => Coussin ours brun
+            [reference] => demo_16
+            [active] => 1
+            [category_default] => 8
+        )
+
+)
+
+Array
+(
+    [0] => Array
+        (
+            [id] => 1
+            [name] => T-shirt imprimé colibri
+            [reference] => demo_1
+            [active] => 1
+            [category_default] => 4
+        )
+
+    [1] => Array
+        (
+            [id] => 2
+            [name] => Pull imprimé colibri
+            [reference] => demo_3
+            [active] => 1
+            [category_default] => 5
+        )
+
+    [2] => Array
+        (
+            [id] => 3
+            [name] => Affiche encadrée The best is yet to come
+            [reference] => demo_6
+            [active] => 1
+            [category_default] => 9
+        )
+
+    [3] => Array
+        (
+            [id] => 4
+            [name] => Affiche encadrée The adventure begins
+            [reference] => demo_5
+            [active] => 1
+            [category_default] => 9
+        )
+
+    [4] => Array
+        (
+            [id] => 5
+            [name] => Affiche encadrée Today is a good day
+            [reference] => demo_7
+            [active] => 1
+            [category_default] => 9
+        )
+
+    [5] => Array
+        (
+            [id] => 6
+            [name] => Mug The best is yet to come
+            [reference] => demo_11
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [6] => Array
+        (
+            [id] => 7
+            [name] => Mug The adventure begins
+            [reference] => demo_12
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [7] => Array
+        (
+            [id] => 8
+            [name] => Mug Today is a good day
+            [reference] => demo_13
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [8] => Array
+        (
+            [id] => 9
+            [name] => Coussin renard
+            [reference] => demo_15
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [9] => Array
+        (
+            [id] => 10
+            [name] => Coussin ours brun
+            [reference] => demo_16
+            [active] => 1
+            [category_default] => 8
+        )
+
+)
+
+Array
+(
+    [0] => Array
+        (
+            [id] => 1
+            [name] => T-shirt imprimé colibri
+            [reference] => demo_1
+            [active] => 1
+            [category_default] => 4
+        )
+
+    [1] => Array
+        (
+            [id] => 2
+            [name] => Pull imprimé colibri
+            [reference] => demo_3
+            [active] => 1
+            [category_default] => 5
+        )
+
+    [2] => Array
+        (
+            [id] => 3
+            [name] => Affiche encadrée The best is yet to come
+            [reference] => demo_6
+            [active] => 1
+            [category_default] => 9
+        )
+
+    [3] => Array
+        (
+            [id] => 4
+            [name] => Affiche encadrée The adventure begins
+            [reference] => demo_5
+            [active] => 1
+            [category_default] => 9
+        )
+
+    [4] => Array
+        (
+            [id] => 5
+            [name] => Affiche encadrée Today is a good day
+            [reference] => demo_7
+            [active] => 1
+            [category_default] => 9
+        )
+
+    [5] => Array
+        (
+            [id] => 6
+            [name] => Mug The best is yet to come
+            [reference] => demo_11
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [6] => Array
+        (
+            [id] => 7
+            [name] => Mug The adventure begins
+            [reference] => demo_12
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [7] => Array
+        (
+            [id] => 8
+            [name] => Mug Today is a good day
+            [reference] => demo_13
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [8] => Array
+        (
+            [id] => 9
+            [name] => Coussin renard
+            [reference] => demo_15
+            [active] => 1
+            [category_default] => 8
+        )
+
+    [9] => Array
+        (
+            [id] => 10
+            [name] => Coussin ours brun
+            [reference] => demo_16
+            [active] => 1
+            [category_default] => 8
+        )
+
+)
+

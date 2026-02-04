@@ -1,0 +1,19 @@
+imports:
+  - { resource: ../common.yml }
+
+services:
+  PrestaShop\Module\PsMcpServer\EventListener\ModuleEventListener:
+    tags:
+      - { name: 'kernel.event_subscriber' }
+    public: true
+    arguments:
+      - '@PrestaShop\Module\PsMcpServer\Services\McpService'
+
+  PrestaShop\Module\PsMcpServer\Controller\Admin\McpServerConfigController:
+    class: PrestaShop\Module\PsMcpServer\Controller\Admin\McpServerConfigController
+    public: true
+
+
+  PrestaShop\Module\PsMcpServer\Helper\ModuleHelper:
+    class: PrestaShop\Module\PsMcpServer\Helper\ModuleHelper
+    public: true

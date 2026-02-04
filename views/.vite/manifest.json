@@ -1,0 +1,36 @@
+{
+  "_vendor-ByHORLBT.js": {
+    "file": "js/vendor-ByHORLBT.js",
+    "name": "vendor"
+  },
+  "js/main.js": {
+    "file": "js/main-cYuMUmya.js",
+    "name": "main",
+    "src": "js/main.js",
+    "isEntry": true,
+    "imports": [
+      "_vendor-ByHORLBT.js"
+    ],
+    "dynamicImports": [
+      "translations/en.json",
+      "translations/fr.json",
+      "translations/en.json"
+    ]
+  },
+  "style.css": {
+    "file": "css/style-D429PAXX.css",
+    "src": "style.css"
+  },
+  "translations/en.json": {
+    "file": "js/translations/en-BBBFkOFl.js",
+    "name": "translations/en",
+    "src": "translations/en.json",
+    "isDynamicEntry": true
+  },
+  "translations/fr.json": {
+    "file": "js/translations/fr-CAu4OVq0.js",
+    "name": "translations/fr",
+    "src": "translations/fr.json",
+    "isDynamicEntry": true
+  }
+}

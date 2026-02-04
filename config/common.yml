@@ -1,0 +1,35 @@
+services:
+  _defaults:
+    public: true
+
+  PrestaShop\Module\PsMcpServer\Ps_mcp_server:
+    class: 'ps_mcp_server'
+    factory: ['Module', 'getInstanceByName']
+    arguments:
+      - 'ps_mcp_server'
+
+  ## REPOSITORIES ##
+  PrestaShop\Module\PsMcpServer\Repository\McpToolsRepository:
+    class: PrestaShop\Module\PsMcpServer\Repository\McpToolsRepository
+
+
+  PrestaShop\Module\PsMcpServer\Repository\McpModulesRegisteredRepository:
+    class: PrestaShop\Module\PsMcpServer\Repository\McpModulesRegisteredRepository
+
+  ## SERVICES ##
+  PrestaShop\Module\PsMcpServer\Services\McpService:
+    class: PrestaShop\Module\PsMcpServer\Services\McpService
+    arguments:
+      - '@PrestaShop\Module\PsMcpServer\Ps_mcp_server'
+      - '@PrestaShop\Module\PsMcpServer\Services\McpToolsService'
+      - '@PrestaShop\Module\PsMcpServer\Services\McpModulesRegisteredService'
+
+  PrestaShop\Module\PsMcpServer\Services\McpToolsService:
+    class: PrestaShop\Module\PsMcpServer\Services\McpToolsService
+    arguments:
+      - '@PrestaShop\Module\PsMcpServer\Repository\McpToolsRepository'
+
+  PrestaShop\Module\PsMcpServer\Services\McpModulesRegisteredService:
+    class: PrestaShop\Module\PsMcpServer\Services\McpModulesRegisteredService
+    arguments:
+      - '@PrestaShop\Module\PsMcpServer\Repository\McpModulesRegisteredRepository'

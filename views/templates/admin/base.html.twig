@@ -1,0 +1,33 @@
+{#**
+ * Copyright (c) 2025 PrestaShop SA
+ *
+ * All Rights Reserved.
+ *
+ * This module is proprietary software owned by PrestaShop SA. All intellectual property rights, including copyrights, trademarks, and trade secrets, are reserved by PrestaShop SA.
+ *
+ * The PS MCP Server module was developed by PrestaShop, which holds all associated intellectual property rights. The license granted to the user does not entail any transfer of rights. The user shall refrain from any act that may infringe upon PrestaShop's rights and undertakes to strictly comply with the limitations of the license set out below. PrestaShop grants the user a personal, non-exclusive, non-transferable, and non-sublicensable license to use the MCP Server module, worldwide and for the entire duration of use of the module. This license is strictly limited to installing the module and using it solely for the operation of the user's PrestaShop store.
+ *#}
+{##}
+{% extends '@PrestaShop/Admin/layout.html.twig' %}
+
+{% block content %}
+
+  <div class="alert alert-info" style="margin-bottom: 20px; border: 2px solid #25b9d7; background-color: #f0f7f9; padding: 20px; border-radius: 8px;">
+    <div style="display:flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h4 style="color: #1e6c7e; margin-top: 0;">🔑 Votre Clé API SEO Copilot</h4>
+            <p style="color: #2c3e50;">Copiez cette clé et collez-la dans votre interface SEO Copilot pour connecter votre boutique.</p>
+            <code style="background: white; padding: 15px; display: block; font-size: 1.4em; border-radius: 6px; border: 1px solid #d1d5db; font-family: monospace; color: #1f2937;">{{ mcp_api_key }}</code>
+        </div>
+        <button class="btn btn-primary btn-lg" style="margin-left: 20px; background-color: #25b9d7; border: none; padding: 12px 24px; font-weight: bold;" onclick="navigator.clipboard.writeText('{{ mcp_api_key }}'); alert('Clé copiée dans le presse-papier !');">Copier la clé</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 20px;">
+    <h3 class="card-header"><i class="material-icons">help</i> Aide & Statut</h3>
+    <div class="card-block">
+        <p>Le serveur MCP est <strong>actif</strong> et prêt à recevoir des requêtes.</p>
+        <p>URL du point de terminaison : <code>/modules/ps_mcp_server/mcp.php</code> (utilisé automatiquement par le SaaS)</p>
+    </div>
+  </div>
+{% endblock %}
