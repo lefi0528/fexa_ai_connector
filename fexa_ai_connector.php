@@ -37,7 +37,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.2.5';
+        $this->version = '3.2.6';
 
         parent::__construct();
 
@@ -57,8 +57,6 @@ class Fexa_ai_connector extends Module
 
     public function install(): bool
     {
-        @ini_set('display_errors', '0');
-        @error_reporting(0);
         return $this->installDatabaseTables()
             && parent::install()
             && $this->registerHook($this->getHooksList())
@@ -71,8 +69,6 @@ class Fexa_ai_connector extends Module
 
     public function uninstall(): bool
     {
-        @ini_set('display_errors', '0');
-        @error_reporting(0);
         return $this->uninstallDatabaseTables()
             && parent::uninstall()
             && Configuration::deleteByName('FEXA_AI_SERVER_STARTED')
@@ -200,37 +196,32 @@ class Fexa_ai_connector extends Module
 
     public function getService($serviceName)
     {
+        // 1. D'abord, on cherche dans notre conteneur local (priorité absolue)
+        try {
+            return $this->serviceContainer->getService($serviceName);
+        } catch (\Exception $e) {
+            // Pas grave, on continue
+        }
+
+        // 2. Si non trouvé et que c'est PS 8+, on cherche dans le conteneur Symfony global
         if (version_compare(_PS_VERSION_, '8.0.0', '>=')) {
             $container = SymfonyContainer::getInstance();
             if ($container !== null) {
-                // Try simplified ID first, then FQCN fallback
-                if ($container->has('fexa_ai_connector.' . $serviceName)) {
-                    return $container->get('fexa_ai_connector.' . $serviceName);
+                // Essayer l'ID court fexa_ai_connector.xxx
+                $shortId = 'fexa_ai_connector.' . $serviceName;
+                if ($container->has($shortId)) {
+                    return $container->get($shortId);
                 }
-                return $container->get($serviceName);
+                
+                // Essayer l'identifiant exact fourni
+                if ($container->has($serviceName)) {
+                    return $container->get($serviceName);
+                }
             }
         }
 
-        $splitServiceNamespace = explode('.', $serviceName);
-        $firstLevelNamespace = $splitServiceNamespace[0];
-
-        if ($firstLevelNamespace !== 'ps_metrics' && $firstLevelNamespace !== 'ps_accounts') {
-            try {
-                $service = $this->serviceContainer->getService($serviceName);
-            } catch (Exception $e) {
-                $container = SymfonyContainer::getInstance();
-
-                if ($container == null) {
-                    throw new PrestaShopException('Symfony container is null or invalid');
-                }
-
-                $service = $container->get($serviceName);
-            }
-
-            return $service;
-        }
-
-        return $this->serviceContainer->getService($serviceName);
+        // 3. Fallback désespéré (devrait être géré par PrestaShopException ou autre si critique)
+        return null;
     }
 
     public function getHooksList(): array
