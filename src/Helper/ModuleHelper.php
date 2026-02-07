@@ -25,7 +25,7 @@ class ModuleHelper
         return [
             'technicalName' => $technicalName,
             'name' => $this->isInstalled($technicalName) ? \ModuleCore::getModuleName($technicalName) : ($nameIfMissing ?? 'Unknown Module'),
-            'logo' => $this->isInstalled($technicalName) ? $baseUrl . __PS_BASE_URI__ . 'modules/' . $technicalName . '/logo.png' : $baseUrl . __PS_BASE_URI__ . 'modules/ps_mcp_server/views/img/ps_logo.jpeg',
+            'logo' => $this->isInstalled($technicalName) ? $baseUrl . __PS_BASE_URI__ . 'modules/' . $technicalName . '/logo.png' : $baseUrl . __PS_BASE_URI__ . 'modules/fexa_ai_connector/logo.png',
             'installState' => $this->isInstalled($technicalName)
                 ? ($this->isEnabled($technicalName) ? 'installed' : 'disabled')
                 : 'uninstalled',

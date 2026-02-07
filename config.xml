@@ -2,7 +2,7 @@
 <module>
     <name>fexa_ai_connector</name>
     <displayName><![CDATA[Fexa AI Connector]]></displayName>
-    <version><![CDATA[1.0.0]]></version>
+    <version><![CDATA[3.2.1]]></version>
     <description><![CDATA[Connect your store with Fexa AI services.]]></description>
     <author><![CDATA[Fexa AI]]></author>
     <tab><![CDATA[seo]]></tab>
