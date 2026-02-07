@@ -2,37 +2,36 @@ services:
   _defaults:
     public: true
 
-  PrestaShop\Module\FexaAiConnector\Fexa_ai_connector:
+  fexa_ai_connector.module:
     class: 'Fexa_ai_connector'
     factory: ['Module', 'getInstanceByName']
     arguments:
       - 'fexa_ai_connector'
 
   ## REPOSITORIES ##
-  PrestaShop\Module\FexaAiConnector\Repository\McpToolsRepository:
+  fexa_ai_connector.repository.tools:
     class: PrestaShop\Module\FexaAiConnector\Repository\McpToolsRepository
 
-
-  PrestaShop\Module\FexaAiConnector\Repository\McpModulesRegisteredRepository:
+  fexa_ai_connector.repository.modules:
     class: PrestaShop\Module\FexaAiConnector\Repository\McpModulesRegisteredRepository
 
   ## SERVICES ##
-  PrestaShop\Module\FexaAiConnector\Services\McpService:
+  fexa_ai_connector.mcp_service:
     class: PrestaShop\Module\FexaAiConnector\Services\McpService
     arguments:
-      - '@PrestaShop\Module\FexaAiConnector\Fexa_ai_connector'
-      - '@PrestaShop\Module\FexaAiConnector\Services\McpToolsService'
-      - '@PrestaShop\Module\FexaAiConnector\Services\McpModulesRegisteredService'
+      - '@fexa_ai_connector.module'
+      - '@fexa_ai_connector.service.tools'
+      - '@fexa_ai_connector.service.modules'
 
-  PrestaShop\Module\FexaAiConnector\Services\McpToolsService:
+  fexa_ai_connector.service.tools:
     class: PrestaShop\Module\FexaAiConnector\Services\McpToolsService
     arguments:
-      - '@PrestaShop\Module\FexaAiConnector\Repository\McpToolsRepository'
+      - '@fexa_ai_connector.repository.tools'
 
-  PrestaShop\Module\FexaAiConnector\Services\McpModulesRegisteredService:
+  fexa_ai_connector.service.modules:
     class: PrestaShop\Module\FexaAiConnector\Services\McpModulesRegisteredService
     arguments:
-      - '@PrestaShop\Module\FexaAiConnector\Repository\McpModulesRegisteredRepository'
+      - '@fexa_ai_connector.repository.modules'
 
   ## ADMIN ##
   PrestaShop\Module\FexaAiConnector\Controller\Admin\FexaAiConfigController:
@@ -45,7 +44,7 @@ services:
       - { name: 'kernel.event_subscriber' }
     public: true
     arguments:
-      - '@PrestaShop\Module\FexaAiConnector\Services\McpService'
+      - '@fexa_ai_connector.mcp_service'
 
   PrestaShop\Module\FexaAiConnector\Helper\ModuleHelper:
     class: PrestaShop\Module\FexaAiConnector\Helper\ModuleHelper
