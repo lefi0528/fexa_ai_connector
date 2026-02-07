@@ -1,21 +1,21 @@
 <?php
 
 /**
- * Copyright (c) 2025 PrestaShop SA
+ * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
  *
- * This module is proprietary software owned by PrestaShop SA. All intellectual property rights, including copyrights, trademarks, and trade secrets, are reserved by PrestaShop SA.
+ * This module is proprietary software owned by Fexa AI. All intellectual property rights, including copyrights, trademarks, and trade secrets, are reserved by Fexa AI.
  *
- * The PS MCP Server module was developed by PrestaShop, which holds all associated intellectual property rights. The license granted to the user does not entail any transfer of rights. The user shall refrain from any act that may infringe upon PrestaShop's rights and undertakes to strictly comply with the limitations of the license set out below. PrestaShop grants the user a personal, non-exclusive, non-transferable, and non-sublicensable license to use the MCP Server module, worldwide and for the entire duration of use of the module. This license is strictly limited to installing the module and using it solely for the operation of the user's PrestaShop store.
+ * This module was developed by Fexa AI.
  */
 
-namespace PrestaShop\Module\PsMcpServer\Controller\Admin;
+namespace PrestaShop\Module\FexaAiConnector\Controller\Admin;
 
-use PrestaShop\Module\PsMcpServer\Exceptions\ContextException;
-use PrestaShop\Module\PsMcpServer\Helper\ModuleHelper;
-use PrestaShop\Module\PsMcpServer\Services\McpService;
-use PrestaShop\Module\PsMcpServer\Services\McpToolsService;
+use PrestaShop\Module\FexaAiConnector\Exceptions\ContextException;
+use PrestaShop\Module\FexaAiConnector\Helper\ModuleHelper;
+use PrestaShop\Module\FexaAiConnector\Services\McpService;
+use PrestaShop\Module\FexaAiConnector\Services\McpToolsService;
 use PrestaShop\PrestaShop\Core\Addon\Module\ModuleManagerBuilder;
 use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,15 +27,15 @@ if (!defined('_PS_VERSION_')) {
 
 class McpServerConfigController extends FrameworkBundleAdminController
 {
-    private \Ps_mcp_server $module;
+    private \Fexa_ai_connector $module;
 
     public function __construct()
     {
-        $module = \Module::getInstanceByName('ps_mcp_server');
+        $module = \Module::getInstanceByName('fexa_ai_connector');
 
         $this->module = $module;
 
-        if ((bool) \Configuration::get('PS_MCP_SERVER_FIRST_DISCOVERY_DONE') && (bool) \Configuration::get('PS_MCP_SERVER_TOOLS_NEED_DISCOVER')) {
+        if ((bool) \Configuration::get('FEXA_AI_SERVER_FIRST_DISCOVERY_DONE') && (bool) \Configuration::get('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER')) {
             $mcpService = $this->module->getService(McpService::class);
             $mcpService->discover();
         }
@@ -45,17 +45,17 @@ class McpServerConfigController extends FrameworkBundleAdminController
     {
         $this->handleFirstDiscovery();
 
-        return $this->render('@Modules/ps_mcp_server/views/templates/admin/base.html.twig', [
-            'layoutTitle' => 'SEO Copilot - MCP Configuration',
-            'mcp_api_key' => \Configuration::get('PS_MCP_API_KEY'),
+        return $this->render('@Modules/fexa_ai_connector/views/templates/admin/base.html.twig', [
+            'layoutTitle' => 'Fexa AI - MCP Configuration',
+            'mcp_api_key' => \Configuration::get('FEXA_AI_API_KEY'),
         ]);
     }
 
     private function handleFirstDiscovery(): void
     {
-        $firstConfigDone = (bool) \Configuration::get('PS_MCP_SERVER_FIRST_DISCOVERY_DONE');
+        $firstConfigDone = (bool) \Configuration::get('FEXA_AI_SERVER_FIRST_DISCOVERY_DONE');
 
-        $module = \Module::getInstanceByName('ps_mcp_server');
+        $module = \Module::getInstanceByName('fexa_ai_connector');
 
         if (!$module->tableExist('mcp_server_modules_registered') || !$module->tableExist('mcp_server_tools') || !$module->tableExist('mcp_server_allowed_users')) {
             $module->installDatabaseTables();
@@ -68,7 +68,7 @@ class McpServerConfigController extends FrameworkBundleAdminController
                 if ($mcpService != null) {
                     $mcpService->fetchAllModulesCompliantWithMcp();
                     $mcpService->discover();
-                    \Configuration::updateValue('PS_MCP_SERVER_FIRST_DISCOVERY_DONE', true);
+                    \Configuration::updateValue('FEXA_AI_SERVER_FIRST_DISCOVERY_DONE', true);
                 }
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Error during automatic discovery: ' . $e->getMessage());

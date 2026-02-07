@@ -1,6 +1,6 @@
 <?php
 
-namespace PrestaShop\Module\PsMcpServer\Mcp\Tools;
+namespace PrestaShop\Module\FexaAiConnector\Mcp\Tools;
 
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
