@@ -2,34 +2,34 @@ services:
   _defaults:
     public: true
 
-  PrestaShop\Module\PsMcpServer\Ps_mcp_server:
-    class: 'ps_mcp_server'
+  PrestaShop\Module\FexaAiConnector\Fexa_ai_connector:
+    class: 'fexa_ai_connector'
     factory: ['Module', 'getInstanceByName']
     arguments:
-      - 'ps_mcp_server'
+      - 'fexa_ai_connector'
 
   ## REPOSITORIES ##
-  PrestaShop\Module\PsMcpServer\Repository\McpToolsRepository:
-    class: PrestaShop\Module\PsMcpServer\Repository\McpToolsRepository
+  PrestaShop\Module\FexaAiConnector\Repository\McpToolsRepository:
+    class: PrestaShop\Module\FexaAiConnector\Repository\McpToolsRepository
 
 
-  PrestaShop\Module\PsMcpServer\Repository\McpModulesRegisteredRepository:
-    class: PrestaShop\Module\PsMcpServer\Repository\McpModulesRegisteredRepository
+  PrestaShop\Module\FexaAiConnector\Repository\McpModulesRegisteredRepository:
+    class: PrestaShop\Module\FexaAiConnector\Repository\McpModulesRegisteredRepository
 
   ## SERVICES ##
-  PrestaShop\Module\PsMcpServer\Services\McpService:
-    class: PrestaShop\Module\PsMcpServer\Services\McpService
+  PrestaShop\Module\FexaAiConnector\Services\McpService:
+    class: PrestaShop\Module\FexaAiConnector\Services\McpService
     arguments:
-      - '@PrestaShop\Module\PsMcpServer\Ps_mcp_server'
-      - '@PrestaShop\Module\PsMcpServer\Services\McpToolsService'
-      - '@PrestaShop\Module\PsMcpServer\Services\McpModulesRegisteredService'
+      - '@PrestaShop\Module\FexaAiConnector\Fexa_ai_connector'
+      - '@PrestaShop\Module\FexaAiConnector\Services\McpToolsService'
+      - '@PrestaShop\Module\FexaAiConnector\Services\McpModulesRegisteredService'
 
-  PrestaShop\Module\PsMcpServer\Services\McpToolsService:
-    class: PrestaShop\Module\PsMcpServer\Services\McpToolsService
+  PrestaShop\Module\FexaAiConnector\Services\McpToolsService:
+    class: PrestaShop\Module\FexaAiConnector\Services\McpToolsService
     arguments:
-      - '@PrestaShop\Module\PsMcpServer\Repository\McpToolsRepository'
+      - '@PrestaShop\Module\FexaAiConnector\Repository\McpToolsRepository'
 
-  PrestaShop\Module\PsMcpServer\Services\McpModulesRegisteredService:
-    class: PrestaShop\Module\PsMcpServer\Services\McpModulesRegisteredService
+  PrestaShop\Module\FexaAiConnector\Services\McpModulesRegisteredService:
+    class: PrestaShop\Module\FexaAiConnector\Services\McpModulesRegisteredService
     arguments:
-      - '@PrestaShop\Module\PsMcpServer\Repository\McpModulesRegisteredRepository'
+      - '@PrestaShop\Module\FexaAiConnector\Repository\McpModulesRegisteredRepository'
