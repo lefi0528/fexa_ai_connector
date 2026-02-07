@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="admin" source-language="en" target-language="fr" datatype="plaintext">
+    <body>
+      <trans-unit id="1">
+        <source>Automatically optimize your PrestaShop store SEO with artificial intelligence. Product descriptions, meta tags, alt text — everything is generated in a few clicks.</source>
+        <target>Optimisez automatiquement le SEO de votre boutique PrestaShop grâce à l'intelligence artificielle. Descriptions produits, balises méta, textes alternatifs — tout est généré en quelques clics.</target>
+      </trans-unit>
+      <trans-unit id="2">
+        <source>Access Fexa AI</source>
+        <target>Accéder à Fexa AI</target>
+      </trans-unit>
+      <trans-unit id="3">
+        <source>Your API Key</source>
+        <target>Votre Clé API</target>
+      </trans-unit>
+      <trans-unit id="4">
+        <source>Copy this key and paste it into your Fexa AI dashboard to connect your store.</source>
+        <target>Copiez cette clé et collez-la dans votre tableau de bord Fexa AI pour connecter votre boutique.</target>
+      </trans-unit>
+      <trans-unit id="5">
+        <source>Copied!</source>
+        <target>Copié !</target>
+      </trans-unit>
+      <trans-unit id="6">
+        <source>Copy the key</source>
+        <target>Copier la clé</target>
+      </trans-unit>
+      <trans-unit id="7">
+        <source>Create your account</source>
+        <target>Créez votre compte</target>
+      </trans-unit>
+      <trans-unit id="8">
+        <source>Go to fexaai.com and create your free account to get started.</source>
+        <target>Rendez-vous sur fexaai.com et créez votre compte gratuit pour commencer.</target>
+      </trans-unit>
+      <trans-unit id="9">
+        <source>Connect your store</source>
+        <target>Connectez votre boutique</target>
+      </trans-unit>
+      <trans-unit id="10">
+        <source>In Fexa AI, add a new PrestaShop store and paste the API key above.</source>
+        <target>Dans Fexa AI, ajoutez une nouvelle boutique PrestaShop et collez la clé API ci-dessus.</target>
+      </trans-unit>
+      <trans-unit id="11">
+        <source>Optimize your SEO</source>
+        <target>Optimisez votre SEO</target>
+      </trans-unit>
+      <trans-unit id="12">
+        <source>Run a scan, generate optimized content, and watch your traffic take off!</source>
+        <target>Lancez un scan, générez des contenus optimisés et regardez votre trafic décoller !</target>
+      </trans-unit>
+      <trans-unit id="13">
+        <source>MCP Server active</source>
+        <target>Serveur MCP actif</target>
+      </trans-unit>
+      <trans-unit id="14">
+        <source>Ready to receive requests from Fexa AI</source>
+        <target>Prêt à recevoir des requêtes depuis Fexa AI</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

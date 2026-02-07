@@ -19,15 +19,14 @@
           <h1 style="margin: 0; font-size: 2em; font-weight: 800;">Fexa AI Connector</h1>
         </div>
         <p style="font-size: 1.1em; opacity: 0.95; margin: 0; line-height: 1.6;">
-          Optimisez automatiquement le SEO de votre boutique PrestaShop grâce à l'intelligence artificielle. 
-          Descriptions produits, balises méta, textes alternatifs — tout est généré en quelques clics.
+          {{ 'Automatically optimize your PrestaShop store SEO with artificial intelligence. Product descriptions, meta tags, alt text — everything is generated in a few clicks.'|trans({}, 'Modules.FexaAiConnector.Admin') }}
         </p>
       </div>
       <div style="text-align: center;">
         <a href="https://fexaai.com" target="_blank" rel="noopener noreferrer" 
            style="display: inline-block; background: white; color: #059669; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 1.1em; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s;"
            onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-          🌐 Accéder à Fexa AI
+          🌐 {{ 'Access Fexa AI'|trans({}, 'Modules.FexaAiConnector.Admin') }}
         </a>
         <p style="margin-top: 12px; font-size: 0.9em; opacity: 0.9;">fexaai.com</p>
       </div>
@@ -39,17 +38,17 @@
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
       <div style="flex: 1; min-width: 300px;">
         <h3 style="color: #059669; margin: 0 0 12px 0; font-size: 1.4em; display: flex; align-items: center; gap: 8px;">
-          <span>🔑</span> Votre Clé API
+          <span>🔑</span> {{ 'Your API Key'|trans({}, 'Modules.FexaAiConnector.Admin') }}
         </h3>
         <p style="color: #4b5563; margin: 0 0 16px 0;">
-          Copiez cette clé et collez-la dans votre tableau de bord <strong>Fexa AI</strong> pour connecter votre boutique.
+          {{ 'Copy this key and paste it into your Fexa AI dashboard to connect your store.'|trans({}, 'Modules.FexaAiConnector.Admin') }}
         </p>
         <code style="background: #f3f4f6; padding: 16px 20px; display: block; font-size: 1.3em; border-radius: 10px; border: 1px solid #e5e7eb; font-family: 'Consolas', 'Monaco', monospace; color: #1f2937; word-break: break-all;">{{ mcp_api_key }}</code>
       </div>
       <button class="btn btn-lg" 
               style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; padding: 16px 28px; font-weight: 700; color: white; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);" 
-              onclick="navigator.clipboard.writeText('{{ mcp_api_key }}'); this.innerHTML='✅ Copié !'; setTimeout(() => this.innerHTML='📋 Copier la clé', 2000);">
-        📋 Copier la clé
+              onclick="navigator.clipboard.writeText('{{ mcp_api_key }}'); this.innerHTML='✅ {{ 'Copied!'|trans({}, 'Modules.FexaAiConnector.Admin') }}'; setTimeout(() => this.innerHTML='📋 {{ 'Copy the key'|trans({}, 'Modules.FexaAiConnector.Admin') }}', 2000);">
+        📋 {{ 'Copy the key'|trans({}, 'Modules.FexaAiConnector.Admin') }}
       </button>
     </div>
   </div>
@@ -60,30 +59,30 @@
     <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
         <span style="background: #ecfdf5; padding: 12px; border-radius: 10px; font-size: 1.5em;">1️⃣</span>
-        <h4 style="margin: 0; color: #1f2937;">Créez votre compte</h4>
+        <h4 style="margin: 0; color: #1f2937;">{{ 'Create your account'|trans({}, 'Modules.FexaAiConnector.Admin') }}</h4>
       </div>
       <p style="color: #6b7280; margin: 0; line-height: 1.6;">
-        Rendez-vous sur <a href="https://fexaai.com" target="_blank" style="color: #10b981; font-weight: 600;">fexaai.com</a> et créez votre compte gratuit pour commencer.
+        {{ 'Go to fexaai.com and create your free account to get started.'|trans({}, 'Modules.FexaAiConnector.Admin') }}
       </p>
     </div>
 
     <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
         <span style="background: #ecfdf5; padding: 12px; border-radius: 10px; font-size: 1.5em;">2️⃣</span>
-        <h4 style="margin: 0; color: #1f2937;">Connectez votre boutique</h4>
+        <h4 style="margin: 0; color: #1f2937;">{{ 'Connect your store'|trans({}, 'Modules.FexaAiConnector.Admin') }}</h4>
       </div>
       <p style="color: #6b7280; margin: 0; line-height: 1.6;">
-        Dans Fexa AI, ajoutez une nouvelle boutique PrestaShop et collez la clé API ci-dessus.
+        {{ 'In Fexa AI, add a new PrestaShop store and paste the API key above.'|trans({}, 'Modules.FexaAiConnector.Admin') }}
       </p>
     </div>
 
     <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
         <span style="background: #ecfdf5; padding: 12px; border-radius: 10px; font-size: 1.5em;">3️⃣</span>
-        <h4 style="margin: 0; color: #1f2937;">Optimisez votre SEO</h4>
+        <h4 style="margin: 0; color: #1f2937;">{{ 'Optimize your SEO'|trans({}, 'Modules.FexaAiConnector.Admin') }}</h4>
       </div>
       <p style="color: #6b7280; margin: 0; line-height: 1.6;">
-        Lancez un scan, générez des contenus optimisés et regardez votre trafic décoller ! 🚀
+        {{ 'Run a scan, generate optimized content, and watch your traffic take off!'|trans({}, 'Modules.FexaAiConnector.Admin') }} 🚀
       </p>
     </div>
 
@@ -93,8 +92,8 @@
   <div style="background: #f0fdf4; border-radius: 12px; padding: 20px; border: 1px solid #bbf7d0;">
     <div style="display: flex; align-items: center; gap: 12px;">
       <span style="background: #10b981; width: 12px; height: 12px; border-radius: 50%; display: inline-block; animation: pulse 2s infinite;"></span>
-      <span style="color: #166534; font-weight: 600;">Serveur MCP actif</span>
-      <span style="color: #6b7280; font-size: 0.9em;">— Prêt à recevoir des requêtes depuis Fexa AI</span>
+      <span style="color: #166534; font-weight: 600;">{{ 'MCP Server active'|trans({}, 'Modules.FexaAiConnector.Admin') }}</span>
+      <span style="color: #6b7280; font-size: 0.9em;">— {{ 'Ready to receive requests from Fexa AI'|trans({}, 'Modules.FexaAiConnector.Admin') }}</span>
     </div>
   </div>
 
