@@ -7,3 +7,5 @@ nbproject/
 .vscode/
 node_modules/
 .mcp/
+*.log
+debug_*.log
