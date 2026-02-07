@@ -1,4 +1,4 @@
-vendor/
+# vendor/ (Inclus pour distribution directe via GitHub)
 composer.lock
 .env
 .DS_Store
