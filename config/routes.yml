@@ -3,7 +3,3 @@ fexa_ai_config:
   controller: "PrestaShop\\Module\\FexaAiConnector\\Controller\\Admin\\FexaAiConfigController::index"
   methods: [GET, POST]
 
-fexa_ai_ajax:
-  path: /fexa_ai_connector/ajax
-  controller: "PrestaShop\\Module\\FexaAiConnector\\Controller\\Admin\\FexaAiAjaxController::ajax"
-  methods: [POST]

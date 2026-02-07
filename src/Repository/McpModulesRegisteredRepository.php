@@ -16,7 +16,7 @@ if (!defined('_PS_VERSION_')) {
 
 class McpModulesRegisteredRepository
 {
-    public const TABLE_NAME = 'mcp_server_modules_registered';
+    public const TABLE_NAME = 'fexa_ai_connector_modules_reg';
 
     private $db;
 

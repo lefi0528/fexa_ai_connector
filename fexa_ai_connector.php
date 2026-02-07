@@ -37,7 +37,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.2.1';
+        $this->version = '3.2.2';
 
         parent::__construct();
 
@@ -57,7 +57,8 @@ class Fexa_ai_connector extends Module
 
     public function install(): bool
     {
-        return parent::install()
+        return $this->installDatabaseTables()
+            && parent::install()
             && $this->registerHook($this->getHooksList())
             && Configuration::updateValue('FEXA_AI_SERVER_STARTED', true)
             && Configuration::updateValue('FEXA_AI_SERVER_FIRST_DISCOVERY_DONE', false)
@@ -68,7 +69,8 @@ class Fexa_ai_connector extends Module
 
     public function uninstall(): bool
     {
-        return parent::uninstall()
+        return $this->uninstallDatabaseTables()
+            && parent::uninstall()
             && Configuration::deleteByName('FEXA_AI_SERVER_STARTED')
             && Configuration::deleteByName('FEXA_AI_SERVER_FIRST_DISCOVERY_DONE')
             && Configuration::deleteByName('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER')
@@ -113,6 +115,78 @@ class Fexa_ai_connector extends Module
             return Configuration::updateValue('FEXA_AI_API_KEY', bin2hex(random_bytes(32)));
         }
         return true;
+    }
+
+    public function installDatabaseTables(): bool
+    {
+        $dbInstallFile = __DIR__ . '/sql/install.sql';
+
+        if (!file_exists($dbInstallFile)) {
+            return false;
+        }
+
+        $sql = (string) \Tools::file_get_contents($dbInstallFile);
+
+        if (empty($sql)) {
+            return false;
+        }
+
+        $sql = str_replace(['PREFIX_', 'ENGINE_TYPE'], [_DB_PREFIX_, _MYSQL_ENGINE_], $sql);
+        $sql = preg_split("/;\s*[\r\n]+/", trim($sql));
+
+        $success = true;
+
+        if (!empty($sql)) {
+            foreach ($sql as $query) {
+                if (empty($query)) continue;
+                if (!\Db::getInstance()->execute($query)) {
+                    $success = false;
+                    break;
+                }
+            }
+        }
+
+        return $success;
+    }
+
+    public function uninstallDatabaseTables(): bool
+    {
+        $dbUninstallFile = __DIR__ . '/sql/uninstall.sql';
+
+        if (!file_exists($dbUninstallFile)) {
+            return false;
+        }
+
+        $sql = (string) \Tools::file_get_contents($dbUninstallFile);
+
+        if (empty($sql)) {
+            return false;
+        }
+
+        $sql = str_replace('PREFIX_', _DB_PREFIX_, $sql);
+        $sql = preg_split("/;\s*[\r\n]+/", trim($sql));
+
+        $success = true;
+
+        if (!empty($sql)) {
+            foreach ($sql as $query) {
+                if (empty($query)) continue;
+                if (!\Db::getInstance()->execute($query)) {
+                    $success = false;
+                    break;
+                }
+            }
+        }
+
+        return $success;
+    }
+
+    public function tableExist(string $tableName): bool
+    {
+        $table = _DB_PREFIX_ . $tableName;
+        $query = 'SHOW TABLES LIKE \'' . $table . '\'';
+
+        return (bool) \Db::getInstance()->executeS($query);
     }
 
     public function getService($serviceName)

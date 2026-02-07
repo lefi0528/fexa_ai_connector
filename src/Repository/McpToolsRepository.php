@@ -16,7 +16,7 @@ if (!defined('_PS_VERSION_')) {
 
 class McpToolsRepository
 {
-    public const TABLE_NAME = 'mcp_server_tools';
+    public const TABLE_NAME = 'fexa_ai_connector_tools';
     private const DATETIME_FORMAT = 'Y-m-d H:i:s';
 
     private $db;
