@@ -1,4 +1,4 @@
-fexa_ai_config:
+admin_fexa_ai_connector_config:
   path: /fexa_ai_connector/config
   controller: "PrestaShop\\Module\\FexaAiConnector\\Controller\\Admin\\FexaAiConfigController::index"
   methods: [GET, POST]

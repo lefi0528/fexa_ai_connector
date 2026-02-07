@@ -37,7 +37,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.2.6';
+        $this->version = '3.2.7';
 
         parent::__construct();
 
@@ -101,7 +101,7 @@ class Fexa_ai_connector extends Module
         }
 
         // Note: We need to rename the controller URL too later
-        Tools::redirectAdmin($this->context->link->getAdminLink('FexaAiConfigController', true, ['route' => 'fexa_ai_config']));
+        Tools::redirectAdmin($this->context->link->getAdminLink('AdminFexaAiConfig', true, ['route' => 'admin_fexa_ai_connector_config']));
     }
 
     public static function getConfig(): array
