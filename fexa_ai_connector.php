@@ -37,7 +37,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.2.3';
+        $this->version = '3.2.4';
 
         parent::__construct();
 
@@ -57,6 +57,7 @@ class Fexa_ai_connector extends Module
 
     public function install(): bool
     {
+        @ini_set('display_errors', '0');
         return $this->installDatabaseTables()
             && parent::install()
             && $this->registerHook($this->getHooksList())
@@ -69,6 +70,7 @@ class Fexa_ai_connector extends Module
 
     public function uninstall(): bool
     {
+        @ini_set('display_errors', '0');
         return $this->uninstallDatabaseTables()
             && parent::uninstall()
             && Configuration::deleteByName('FEXA_AI_SERVER_STARTED')
@@ -138,6 +140,8 @@ class Fexa_ai_connector extends Module
 
         if (!empty($sql)) {
             foreach ($sql as $query) {
+                $query = preg_replace('/^\s*--.*$/m', '', $query); // Remove comments
+                $query = preg_replace('/^\s*#.*$/m', '', $query);  // Remove comments
                 $query = trim($query);
                 if (empty($query)) continue;
                 if (!\Db::getInstance()->execute($query)) {
@@ -193,8 +197,11 @@ class Fexa_ai_connector extends Module
 
     public function getService($serviceName)
     {
-        if (version_compare(_PS_VERSION_, '9.0', '>=')) {
-            return $this->get($serviceName);
+        if (version_compare(_PS_VERSION_, '8.0.0', '>=')) {
+            $container = SymfonyContainer::getInstance();
+            if ($container !== null) {
+                return $container->get($serviceName);
+            }
         }
 
         $splitServiceNamespace = explode('.', $serviceName);

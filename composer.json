@@ -28,7 +28,7 @@
       "PrestaShop\\Module\\FexaAiConnector\\": "src/"
     }
   },
-  "version": "3.2.3",
+  "version": "3.2.4",
   "require": {
     "php": ">=8.1",
     "ext-json": "*",

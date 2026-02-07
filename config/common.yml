@@ -2,7 +2,7 @@ services:
   _defaults:
     public: true
 
-  fexa_ai_connector:
+  PrestaShop\Module\FexaAiConnector\Fexa_ai_connector:
     class: 'Fexa_ai_connector'
     factory: ['Module', 'getInstanceByName']
     arguments:
@@ -20,7 +20,7 @@ services:
   PrestaShop\Module\FexaAiConnector\Services\McpService:
     class: PrestaShop\Module\FexaAiConnector\Services\McpService
     arguments:
-      - '@fexa_ai_connector'
+      - '@PrestaShop\Module\FexaAiConnector\Fexa_ai_connector'
       - '@PrestaShop\Module\FexaAiConnector\Services\McpToolsService'
       - '@PrestaShop\Module\FexaAiConnector\Services\McpModulesRegisteredService'
 
