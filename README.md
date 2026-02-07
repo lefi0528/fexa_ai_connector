@@ -6,7 +6,7 @@ Connect your PrestaShop store effortlessly to [Fexa AI](https://fexaai.com), the
 
 ## Features
 
-- **Universal Compatibility**: Works on PrestaShop 1.7 (PHP 7.4) and PrestaShop 8/9 (PHP 8.1+).
+- **Compatible**: Works on PrestaShop 8 and 9 (PHP 8.1+).
 - **Plug & Play**: Simple installation, zero complex configuration.
 - **Secure**: Uses MCP (Model Context Protocol) with API Key authentication.
 
@@ -20,8 +20,8 @@ Connect your PrestaShop store effortlessly to [Fexa AI](https://fexaai.com), the
 
 ## Requirements
 
-- PrestaShop >= 1.7.0.0
-- PHP >= 7.4
+- PrestaShop >= 8.0.0
+- PHP >= 8.1
 
 ## Contributing
 

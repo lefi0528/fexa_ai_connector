@@ -1,7 +1,6 @@
 <?php
 /**
- * Universal Entry Point for SEO Copilot MCP Server
- * Dispatches to Legacy (PHP < 8.1) or Modern (PHP >= 8.1) implementation.
+ * Entry Point for Fexa AI MCP Server (PHP 8.1+ / PrestaShop 8+)
  */
 
 // Load PrestaShop Configuration
@@ -18,41 +17,26 @@ if (!$storedKey || $apiKey !== $storedKey) {
     exit;
 }
 
-// Check PHP Version and Dispatch
-if (PHP_VERSION_ID < 80100) {
-    // --- LEGACY MODE (PHP < 8.1) ---
-    require_once dirname(__FILE__) . '/src/Legacy/Server.php';
-    require_once dirname(__FILE__) . '/src/Legacy/Tools/ProductTool.php';
+// Load MCP Service via Service Container
+$module = Module::getInstanceByName('fexa_ai_connector');
 
-    $server = new \PrestaShop\Module\FexaAiConnector\Legacy\Server();
-    $server->handleRequest(function() {
-        return file_get_contents('php://input');
-    });
+if (!$module) {
+    header('HTTP/1.0 500 Internal Server Error');
+    echo json_encode(['error' => 'Module not found']);
+    exit;
+}
 
-} else {
-    // --- MODERN MODE (PHP >= 8.1) ---
-    // Use the official Service Container to load the MCP Service
-    $module = Module::getInstanceByName('fexa_ai_connector');
+try {
+    $serviceName = 'PrestaShop\\Module\\FexaAiConnector\\Services\\McpService';
+    $mcpService = $module->getService($serviceName);
     
-    if (!$module) {
-        header('HTTP/1.0 500 Internal Server Error');
-        echo json_encode(['error' => 'Module not found']);
-        exit;
+    if ($mcpService) {
+        $mcpService->executeHttpMcpRequest();
+    } else {
+        throw new Exception('McpService could not be loaded');
     }
-
-    try {
-        // We use the string class name to avoid importing it here (which might trigger autoload/issues on old PHP if file was parsed, though inside else it's safe)
-        $serviceName = 'PrestaShop\\Module\\FexaAiConnector\\Services\\McpService';
-        $mcpService = $module->getService($serviceName);
-        
-        if ($mcpService) {
-            $mcpService->executeHttpMcpRequest();
-        } else {
-            throw new Exception('McpService could not be loaded');
-        }
-    } catch (Exception $e) {
-        header('HTTP/1.0 500 Internal Server Error');
-        echo json_encode(['error' => 'Modern Server Error: ' . $e->getMessage()]);
-        exit;
-    }
+} catch (Exception $e) {
+    header('HTTP/1.0 500 Internal Server Error');
+    echo json_encode(['error' => 'Server Error: ' . $e->getMessage()]);
+    exit;
 }
