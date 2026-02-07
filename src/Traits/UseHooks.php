@@ -28,7 +28,7 @@ trait UseHooks
     public function hookModuleRoutes(): array
     {
         return [
-            'ps_mcp_server-mcp-server' => [
+            'fexa_ai_connector-mcp-server' => [
                 'controller' => 'McpServer',
                 'rule' => 'mcp',
                 'keywords' => [],
