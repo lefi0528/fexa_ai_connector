@@ -1,4 +1,2 @@
 imports:
   - { resource: ./common.yml }
-  - { resource: ./admin/services.yml }
-  - { resource: ./front/services.yml }

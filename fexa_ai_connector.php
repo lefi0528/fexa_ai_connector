@@ -37,7 +37,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.2.2';
+        $this->version = '3.2.3';
 
         parent::__construct();
 
@@ -132,12 +132,13 @@ class Fexa_ai_connector extends Module
         }
 
         $sql = str_replace(['PREFIX_', 'ENGINE_TYPE'], [_DB_PREFIX_, _MYSQL_ENGINE_], $sql);
-        $sql = preg_split("/;\s*[\r\n]+/", trim($sql));
+        $sql = preg_split("/;\s*[\r\n]*/", $sql);
 
         $success = true;
 
         if (!empty($sql)) {
             foreach ($sql as $query) {
+                $query = trim($query);
                 if (empty($query)) continue;
                 if (!\Db::getInstance()->execute($query)) {
                     $success = false;
@@ -164,12 +165,13 @@ class Fexa_ai_connector extends Module
         }
 
         $sql = str_replace('PREFIX_', _DB_PREFIX_, $sql);
-        $sql = preg_split("/;\s*[\r\n]+/", trim($sql));
+        $sql = preg_split("/;\s*[\r\n]*/", $sql);
 
         $success = true;
 
         if (!empty($sql)) {
             foreach ($sql as $query) {
+                $query = trim($query);
                 if (empty($query)) continue;
                 if (!\Db::getInstance()->execute($query)) {
                     $success = false;

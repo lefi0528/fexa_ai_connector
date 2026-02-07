@@ -2,8 +2,8 @@ services:
   _defaults:
     public: true
 
-  PrestaShop\Module\FexaAiConnector\Fexa_ai_connector:
-    class: 'fexa_ai_connector'
+  fexa_ai_connector:
+    class: 'Fexa_ai_connector'
     factory: ['Module', 'getInstanceByName']
     arguments:
       - 'fexa_ai_connector'
@@ -20,7 +20,7 @@ services:
   PrestaShop\Module\FexaAiConnector\Services\McpService:
     class: PrestaShop\Module\FexaAiConnector\Services\McpService
     arguments:
-      - '@PrestaShop\Module\FexaAiConnector\Fexa_ai_connector'
+      - '@fexa_ai_connector'
       - '@PrestaShop\Module\FexaAiConnector\Services\McpToolsService'
       - '@PrestaShop\Module\FexaAiConnector\Services\McpModulesRegisteredService'
 
@@ -33,3 +33,20 @@ services:
     class: PrestaShop\Module\FexaAiConnector\Services\McpModulesRegisteredService
     arguments:
       - '@PrestaShop\Module\FexaAiConnector\Repository\McpModulesRegisteredRepository'
+
+  ## ADMIN ##
+  PrestaShop\Module\FexaAiConnector\Controller\Admin\FexaAiConfigController:
+    class: PrestaShop\Module\FexaAiConnector\Controller\Admin\FexaAiConfigController
+    public: true
+    tags: ['controller.service_arguments']
+
+  PrestaShop\Module\FexaAiConnector\EventListener\ModuleEventListener:
+    tags:
+      - { name: 'kernel.event_subscriber' }
+    public: true
+    arguments:
+      - '@PrestaShop\Module\FexaAiConnector\Services\McpService'
+
+  PrestaShop\Module\FexaAiConnector\Helper\ModuleHelper:
+    class: PrestaShop\Module\FexaAiConnector\Helper\ModuleHelper
+    public: true
