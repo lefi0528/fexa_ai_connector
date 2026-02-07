@@ -22,8 +22,6 @@ if (!defined('_PS_VERSION_')) {
 
 class Fexa_ai_connector extends Module
 {
-    use PrestaShop\Module\FexaAiConnector\Traits\UseHooks;
-
     private $serviceContainer;
 
     public $adminControllers;
@@ -46,7 +44,7 @@ class Fexa_ai_connector extends Module
         $this->displayName = $this->l('Fexa AI Connector');
         $this->description = $this->l('Connect your store with Fexa AI services.');
         $this->confirmUninstall = $this->l('Do you really want to uninstall Fexa AI Connector?');
-        $this->ps_versions_compliancy = ['min' => '1.7.0.0', 'max' => '9.99.99'];
+        $this->ps_versions_compliancy = ['min' => '8.0.0', 'max' => '9.99.99'];
         $this->adminControllers = [];
 
         if ($this->serviceContainer === null) {
@@ -215,5 +213,27 @@ class Fexa_ai_connector extends Module
         }
 
         return $this->serviceContainer->getService($serviceName);
+    }
+
+    public function getHooksList(): array
+    {
+        return [
+            'moduleRoutes',
+        ];
+    }
+
+    public function hookModuleRoutes(): array
+    {
+        return [
+            'fexa_ai_connector-mcp-server' => [
+                'controller' => 'McpServer',
+                'rule' => 'mcp',
+                'keywords' => [],
+                'params' => [
+                    'fc' => 'module',
+                    'module' => $this->name,
+                ],
+            ],
+        ];
     }
 }
