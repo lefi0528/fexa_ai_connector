@@ -27,46 +27,40 @@ class ProductTools
     public function listProducts(?int $langId = null, int $limit = 50, int $offset = 0, bool $onlyActive = true, ?int $idCategoryId = null): array
     {
         $context = Context::getContext();
-        
-        // Safety check for Context
+
         if (!$context) {
-            // Try to recover or default
-             throw new \Exception('PrestaShop Context not initialized.');
+            throw new \Exception('PrestaShop Context not initialized.');
         }
 
-        // Safety check for Language
         if (!$langId) {
             if (isset($context->language) && isset($context->language->id)) {
                 $langId = (int)$context->language->id;
             } else {
-                 // Fallback to Configuration default language
-                 $langId = (int)\Configuration::get('PS_LANG_DEFAULT');
+                $langId = (int)\Configuration::get('PS_LANG_DEFAULT');
             }
         }
-        
+
         if (empty($langId)) {
-             throw new \Exception('Could not determine Language ID.');
+            throw new \Exception('Could not determine Language ID.');
         }
 
         $idCategory = $idCategoryId ? (int)$idCategoryId : false;
-        error_log("[MCP/ProductTools] listProducts called: langId=$langId, limit=$limit, offset=$offset, idCategory=" . var_export($idCategory, true) . ", onlyActive=" . var_export($onlyActive, true));
         $products = \Product::getProducts($langId, $offset, $limit, 'id_product', 'ASC', $idCategory, $onlyActive);
-        
+
         if (!is_array($products)) {
-             return [];
+            return [];
         }
 
-        // Sanitize output to return cleaner JSON
         return array_map(function($p) use ($langId, $context) {
             $images = \Image::getImages($langId, (int)$p['id_product']);
             $nbImages = is_array($images) ? count($images) : 0;
             $missingAlt = 0;
             if ($nbImages > 0) {
-                 foreach ($images as $img) {
-                     if (empty($img['legend']) || $img['legend'] === $p['name']) { // Empty or just product name is weak
-                         $missingAlt++;
-                     }
-                 }
+                foreach ($images as $img) {
+                    if (empty($img['legend']) || $img['legend'] === $p['name']) {
+                        $missingAlt++;
+                    }
+                }
             }
 
             return [
@@ -103,14 +97,13 @@ class ProductTools
     {
         $context = Context::getContext();
         $idLang = $id_lang ?? (int)$context->language->id;
-        
+
         $product = new \Product($id_product, false, $idLang);
-        
+
         if (!Validate::isLoadedObject($product)) {
             throw new \Exception("Product with ID $id_product not found.");
         }
 
-        // 1. Fetch Features
         $features = \Product::getFrontFeaturesStatic($idLang, $id_product);
         $formattedFeatures = [];
         foreach ($features as $f) {
@@ -120,7 +113,6 @@ class ProductTools
             ];
         }
 
-        // 2. Fetch Combinations (Attributes)
         $attributes = $product->getAttributesGroups($idLang);
         $formattedCombinations = [];
         foreach ($attributes as $a) {
@@ -138,19 +130,14 @@ class ProductTools
             ];
         }
 
-        // 3. Fetch Category Name
         $category = new \Category($product->id_category_default, $idLang);
         $categoryName = Validate::isLoadedObject($category) ? $category->name : '';
 
-        // 4. Fetch Images (Missed in V1)
         $images = \Image::getImages($idLang, $product->id);
         $formattedImages = [];
         if (is_array($images)) {
             foreach ($images as $img) {
-                // Determine full URL if possible, or just IDs
-                // Context link helper is best
                 $imageUrl = $context->link->getImageLink($product->link_rewrite[$idLang] ?? $product->name[$idLang], $img['id_image']);
-                
                 $formattedImages[] = [
                     'id' => $img['id_image'],
                     'cover' => (bool)$img['cover'],
@@ -176,9 +163,9 @@ class ProductTools
             'category_name' => $categoryName,
             'features' => $formattedFeatures,
             'combinations' => array_values($formattedCombinations),
-            'nb_images' => count($formattedImages), // Helper count
+            'nb_images' => count($formattedImages),
             'associations' => [
-                 'images' => $formattedImages
+                'images' => $formattedImages
             ],
             'price_tax_excl' => (float)$product->price,
             'on_sale' => (bool)$product->on_sale,
@@ -201,14 +188,13 @@ class ProductTools
         required: ['id_product']
     )]
     public function updateProductSeo(
-        int $id_product, 
-        ?int $id_lang = null, 
-        ?string $description_short = null, 
-        ?string $description = null, 
-        ?string $meta_title = null, 
+        int $id_product,
+        ?int $id_lang = null,
+        ?string $description_short = null,
+        ?string $description = null,
+        ?string $meta_title = null,
         ?string $meta_description = null
-    ): array
-    {
+    ): array {
         $context = Context::getContext();
         $id_lang = $id_lang ?? (int)$context->language->id;
 
@@ -216,23 +202,18 @@ class ProductTools
             $id_lang = (int)\Configuration::get('PS_LANG_DEFAULT');
         }
 
-        // Load product
         $product = new \Product($id_product);
-        
+
         if (!Validate::isLoadedObject($product)) {
             throw new \Exception("Product with ID $id_product not found.");
         }
 
         $fieldsUpdated = [];
 
-        // Helper to update multi-lang field for a specific ID
-        // PrestaShop stores multi-lang fields as arrays [id_lang => value]
-        
         $updateField = function(&$fieldArray, $newValue, $fieldName) use ($id_lang, &$fieldsUpdated) {
             if ($newValue !== null) {
-                // If it's not an array yet (single lang store context), force it to array
                 if (!is_array($fieldArray)) {
-                    $fieldArray = [$id_lang => $fieldArray]; 
+                    $fieldArray = [$id_lang => $fieldArray];
                 }
                 $fieldArray[$id_lang] = $newValue;
                 $fieldsUpdated[] = $fieldName;
@@ -286,7 +267,6 @@ class ProductTools
             throw new \Exception("Image with ID $id_image not found.");
         }
 
-        // Multi-lang legend update
         if (!is_array($image->legend)) {
             $image->legend = [$id_lang => $legend];
         } else {
