@@ -37,7 +37,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.2.8';
+        $this->version = '3.2.9';
 
         parent::__construct();
 
@@ -162,10 +162,6 @@ class Fexa_ai_connector extends Module
         }
 
         $sql = (string) \Tools::file_get_contents($dbUninstallFile);
-
-        if (empty($sql)) {
-            return false;
-        }
 
         $sql = str_replace('PREFIX_', _DB_PREFIX_, $sql);
         $sql = preg_split("/;\s*[\r\n]*/", $sql);
