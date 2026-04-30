@@ -30,6 +30,10 @@ class Fexa_ai_connector extends Module
     public $emailSupport;
     public $termsOfServiceUrl;
 
+    const GITHUB_REPO = 'lefi0528/fexa_ai_connector';
+    const UPDATE_CHECK_CACHE_KEY = 'FEXA_AI_LATEST_VERSION';
+    const UPDATE_CHECK_CACHE_TTL = 86400; // 24h
+
     public function __construct()
     {
         $this->name = 'fexa_ai_connector';
@@ -75,13 +79,64 @@ class Fexa_ai_connector extends Module
             && Configuration::deleteByName('FEXA_AI_SERVER_FIRST_DISCOVERY_DONE')
             && Configuration::deleteByName('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER')
             && Configuration::deleteByName('FEXA_AI_SERVER_LOGS_ENABLED')
-            && Configuration::deleteByName('FEXA_AI_API_KEY');
+            && Configuration::deleteByName('FEXA_AI_API_KEY')
+            && Configuration::deleteByName(self::UPDATE_CHECK_CACHE_KEY)
+            && Configuration::deleteByName(self::UPDATE_CHECK_CACHE_KEY . '_TS');
     }
 
     public function upgrade($version): bool
     {
         Configuration::updateValue('FEXA_AI_SERVER_FIRST_DISCOVERY_DONE', false);
         return true;
+    }
+
+    /**
+     * Called by PrestaShop's module update checker.
+     * Returns the latest available version from GitHub Releases.
+     */
+    public function checkVersion(): string
+    {
+        $cachedVersion = Configuration::get(self::UPDATE_CHECK_CACHE_KEY);
+        $cachedTs = (int) Configuration::get(self::UPDATE_CHECK_CACHE_KEY . '_TS');
+
+        if ($cachedVersion && (time() - $cachedTs) < self::UPDATE_CHECK_CACHE_TTL) {
+            return $cachedVersion;
+        }
+
+        try {
+            $url = 'https://api.github.com/repos/' . self::GITHUB_REPO . '/releases/latest';
+            $opts = [
+                'http' => [
+                    'method' => 'GET',
+                    'header' => "User-Agent: PrestaShop-Module-FexaAI\r\n",
+                    'timeout' => 5,
+                ]
+            ];
+            $context = stream_context_create($opts);
+            $response = @file_get_contents($url, false, $context);
+
+            if ($response) {
+                $data = json_decode($response, true);
+                $latestVersion = ltrim($data['tag_name'] ?? $this->version, 'v');
+
+                Configuration::updateValue(self::UPDATE_CHECK_CACHE_KEY, $latestVersion);
+                Configuration::updateValue(self::UPDATE_CHECK_CACHE_KEY . '_TS', time());
+
+                return $latestVersion;
+            }
+        } catch (\Exception $e) {
+            // Silently fail — return current version to avoid false update alerts
+        }
+
+        return $this->version;
+    }
+
+    /**
+     * Returns the download URL for the latest release ZIP from GitHub.
+     */
+    public function getUpdateUrl(): string
+    {
+        return 'https://github.com/' . self::GITHUB_REPO . '/releases/latest/download/fexa_ai_connector.zip';
     }
 
     public function isMcpCompliant(): bool
@@ -100,7 +155,6 @@ class Fexa_ai_connector extends Module
             throw new PrestaShopException('Context or Link not defined');
         }
 
-        // Note: We need to rename the controller URL too later
         Tools::redirectAdmin($this->context->link->getAdminLink('AdminFexaAiConfig', true, ['route' => 'admin_fexa_ai_connector_config']));
     }
 
@@ -138,9 +192,9 @@ class Fexa_ai_connector extends Module
 
         if (!empty($sql)) {
             foreach ($sql as $query) {
-                $query = preg_replace('/--.*$/m', '', $query); // Remove -- comments
-                $query = preg_replace('/#.*$/m', '', $query);  // Remove # comments
-                $query = preg_replace('/\/\*.*?\*\//s', '', $query); // Remove /* */ comments
+                $query = preg_replace('/--.*$/m', '', $query);
+                $query = preg_replace('/#.*$/m', '', $query);
+                $query = preg_replace('/\/\*.*?\*\//s', '', $query);
                 $query = trim($query);
                 if (empty($query)) continue;
                 if (!\Db::getInstance()->execute($query)) {
@@ -192,31 +246,25 @@ class Fexa_ai_connector extends Module
 
     public function getService($serviceName)
     {
-        // 1. D'abord, on cherche dans notre conteneur local (priorité absolue)
         try {
             return $this->serviceContainer->getService($serviceName);
         } catch (\Exception $e) {
             // Pas grave, on continue
         }
 
-        // 2. Si non trouvé et que c'est PS 8+, on cherche dans le conteneur Symfony global
         if (version_compare(_PS_VERSION_, '8.0.0', '>=')) {
             $container = SymfonyContainer::getInstance();
             if ($container !== null) {
-                // Essayer l'ID court fexa_ai_connector.xxx
                 $shortId = 'fexa_ai_connector.' . $serviceName;
                 if ($container->has($shortId)) {
                     return $container->get($shortId);
                 }
-                
-                // Essayer l'identifiant exact fourni
                 if ($container->has($serviceName)) {
                     return $container->get($serviceName);
                 }
             }
         }
 
-        // 3. Fallback désespéré (devrait être géré par PrestaShopException ou autre si critique)
         return null;
     }
 
