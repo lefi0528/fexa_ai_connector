@@ -77,7 +77,8 @@ class ProductTools
                 'link_rewrite' => $p['link_rewrite'] ?? '',
                 'url' => $context->link->getProductLink((int)$p['id_product'], $p['link_rewrite'] ?? '', $p['category_default'], null, $langId),
                 'manufacturer_name' => $p['manufacturer_name'] ?? '',
-                'price' => isset($p['price']) ? (float)$p['price'] : 0.0
+                'price' => isset($p['price']) ? (float)$p['price'] : 0.0,
+                'date_upd' => $p['date_upd'] ?? null
             ];
         }, $products);
     }
