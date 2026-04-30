@@ -12,65 +12,64 @@ class CategoryTools
 {
     #[McpTool(
         name: 'list_categories',
-        description: 'List categories tree or flat list. Returns ID, Name, Active status.'
+        description: 'List all categories (full tree, all depths). Returns ID, Name, productCount and Active status.'
     )]
     #[Schema(
         properties: [
             'langId' => ['type' => 'integer', 'description' => 'Language ID'],
-            'rootCategoryId' => ['type' => 'integer', 'description' => 'Root category ID to start from (default Home Category)'],
-            'limit' => ['type' => 'integer', 'description' => 'Limit results (default 100)'],
+            'limit' => ['type' => 'integer', 'description' => 'Limit results (default 200)'],
             'offset' => ['type' => 'integer', 'description' => 'Offset for pagination (default 0)']
         ],
         required: []
     )]
-    public function listCategories(?int $langId = null, ?int $rootCategoryId = null, int $limit = 100, int $offset = 0): array
+    public function listCategories(?int $langId = null, int $limit = 200, int $offset = 0): array
     {
         $context = Context::getContext();
-        
-        // Safety checks
+
         if (!$context) {
-             throw new \Exception('PrestaShop Context not initialized.');
+            throw new \Exception('PrestaShop Context not initialized.');
         }
 
         if (!$langId) {
-             if (isset($context->language) && isset($context->language->id)) {
-                 $langId = (int)$context->language->id;
-             } else {
-                 $langId = (int)\Configuration::get('PS_LANG_DEFAULT');
-             }
+            if (isset($context->language) && isset($context->language->id)) {
+                $langId = (int)$context->language->id;
+            } else {
+                $langId = (int)\Configuration::get('PS_LANG_DEFAULT');
+            }
         }
-        
+
         if (empty($langId)) {
-             throw new \Exception('Could not determine Language ID.');
+            throw new \Exception('Could not determine Language ID.');
         }
 
-        $idRoot = $rootCategoryId ?? $context->shop->getCategory();
-        
-        if (!$idRoot) {
-            $idRoot = (int)\Configuration::get('PS_ROOT_CATEGORY');
-        }
-    
-        $categories = \Category::getChildren($idRoot, $langId, true); // Active only
-    
-        if (!is_array($categories)) {
-            $categories = [];
-        }
-    
-        // Apply pagination (limit and offset)
-        if ($offset > 0 || count($categories) > $limit) {
-            $categories = array_slice($categories, $offset, $limit);
+        // Use a flat SQL query to get ALL categories at all depths (excluding root and home)
+        $sql = 'SELECT c.id_category, cl.name, cl.link_rewrite, c.active, c.level_depth,
+                    (SELECT COUNT(*) FROM ' . _DB_PREFIX_ . 'category_product cp WHERE cp.id_category = c.id_category) as product_count
+                FROM ' . _DB_PREFIX_ . 'category c
+                INNER JOIN ' . _DB_PREFIX_ . 'category_lang cl
+                    ON c.id_category = cl.id_category AND cl.id_lang = ' . (int)$langId . '
+                WHERE c.active = 1
+                    AND c.level_depth > 1
+                ORDER BY c.level_depth ASC, cl.name ASC
+                LIMIT ' . (int)$limit . ' OFFSET ' . (int)$offset;
+
+        $rows = \Db::getInstance()->executeS($sql);
+
+        if (!is_array($rows)) {
+            return [];
         }
 
-        return array_map(function($c) use ($langId, $context) {
+        return array_map(function ($c) use ($langId, $context) {
             return [
-                'id' => (int)$c['id_category'],
-                'name' => !empty($c['name']) ? $c['name'] : 'Category #' . $c['id_category'],
-                'description' => isset($c['description']) ? strip_tags($c['description']) : '', // Preview only
-                'active' => isset($c['active']) ? (bool)$c['active'] : true, 
+                'id'           => (int)$c['id_category'],
+                'name'         => !empty($c['name']) ? $c['name'] : 'Category #' . $c['id_category'],
                 'link_rewrite' => $c['link_rewrite'] ?? '',
-                'url' => $context->link->getCategoryLink((int)$c['id_category'], $c['link_rewrite'] ?? '', $langId),
+                'active'       => (bool)$c['active'],
+                'level_depth'  => (int)$c['level_depth'],
+                'productCount' => (int)$c['product_count'],
+                'url'          => $context->link->getCategoryLink((int)$c['id_category'], $c['link_rewrite'] ?? '', $langId),
             ];
-        }, $categories);
+        }, $rows);
     }
 
     #[McpTool(
@@ -106,7 +105,7 @@ class CategoryTools
             'active' => $category->active,
             'level_depth' => $category->level_depth,
             'id_parent' => $category->id_parent,
-            'nb_products' => (int)$category->getProducts($idLang, 1, 1, null, null, true), // Count only
+            'nb_products' => (int)$category->getProducts($idLang, 1, 1, null, null, true),
             'has_image' => file_exists(_PS_CAT_IMG_DIR_ . (int)$category->id . '.jpg')
         ];
     }
@@ -126,13 +125,12 @@ class CategoryTools
         required: ['id_category']
     )]
     public function updateCategorySeo(
-        int $id_category, 
-        ?int $id_lang = null, 
-        ?string $description = null, 
-        ?string $meta_title = null, 
+        int $id_category,
+        ?int $id_lang = null,
+        ?string $description = null,
+        ?string $meta_title = null,
         ?string $meta_description = null
-    ): array
-    {
+    ): array {
         $context = Context::getContext();
         $id_lang = $id_lang ?? (int)$context->language->id;
 
@@ -140,7 +138,6 @@ class CategoryTools
             $id_lang = (int)\Configuration::get('PS_LANG_DEFAULT');
         }
 
-        // Load category
         $category = new \Category($id_category);
 
         if (!Validate::isLoadedObject($category)) {
@@ -149,11 +146,10 @@ class CategoryTools
 
         $fieldsUpdated = [];
 
-        // Update helper (same logic as product)
-        $updateField = function(&$fieldArray, $newValue, $fieldName) use ($id_lang, &$fieldsUpdated) {
+        $updateField = function (&$fieldArray, $newValue, $fieldName) use ($id_lang, &$fieldsUpdated) {
             if ($newValue !== null) {
                 if (!is_array($fieldArray)) {
-                    $fieldArray = [$id_lang => $fieldArray]; 
+                    $fieldArray = [$id_lang => $fieldArray];
                 }
                 $fieldArray[$id_lang] = $newValue;
                 $fieldsUpdated[] = $fieldName;
@@ -179,5 +175,4 @@ class CategoryTools
             'updated_fields' => $fieldsUpdated
         ];
     }
-
 }
