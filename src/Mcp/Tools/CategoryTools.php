@@ -106,8 +106,46 @@ class CategoryTools
             'level_depth' => $category->level_depth,
             'id_parent' => $category->id_parent,
             'nb_products' => (int)$category->getProducts($idLang, 1, 1, null, null, true),
-            'has_image' => file_exists(_PS_CAT_IMG_DIR_ . (int)$category->id . '.jpg')
+            'has_image' => file_exists(_PS_CAT_IMG_DIR_ . (int)$category->id . '.jpg'),
+            'breadcrumb' => $this->buildBreadcrumbTrail((int) $category->id, (int) $idLang, $context),
         ];
+    }
+
+    /**
+     * Build a breadcrumb trail (Home → … → category) as [{name, url}] from a
+     * category's ancestry. Best-effort: returns [] on any failure.
+     */
+    private function buildBreadcrumbTrail(int $idCategory, int $idLang, $context): array
+    {
+        $trail = [];
+        try {
+            $cat = new \Category($idCategory, $idLang);
+            if (!Validate::isLoadedObject($cat)) {
+                return $trail;
+            }
+            $parents = $cat->getParentsCategories($idLang); // current → … → root
+            if (!is_array($parents)) {
+                return $trail;
+            }
+            foreach (array_reverse($parents) as $p) {
+                $idc = isset($p['id_category']) ? (int) $p['id_category'] : 0;
+                if ($idc <= 1) {
+                    continue; // skip the technical root category
+                }
+                $name = isset($p['name']) ? (string) $p['name'] : '';
+                if ($name === '') {
+                    continue;
+                }
+                $trail[] = [
+                    'name' => $name,
+                    'url' => $context->link->getCategoryLink($idc, isset($p['link_rewrite']) ? $p['link_rewrite'] : null, $idLang),
+                ];
+            }
+        } catch (\Exception $e) {
+            // best-effort
+        }
+
+        return $trail;
     }
 
     #[McpTool(

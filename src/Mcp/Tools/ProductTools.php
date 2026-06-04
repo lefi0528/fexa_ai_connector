@@ -173,6 +173,13 @@ class ProductTools
             // fall back to the base price already assigned
         }
 
+        // Breadcrumb trail: category ancestry + the product itself as the last node.
+        $breadcrumb = $this->buildBreadcrumbTrail((int) $product->id_category_default, (int) $idLang, $context);
+        $breadcrumb[] = [
+            'name' => is_string($product->name) ? $product->name : '',
+            'url' => $context->link->getProductLink($product, null, null, null, $idLang),
+        ];
+
         return [
             'id' => $product->id,
             'name' => $product->name,
@@ -204,7 +211,45 @@ class ProductTools
             'quantity' => $quantity,
             'availability' => $availability,
             'available_for_order' => $availableForOrder,
+            'breadcrumb' => $breadcrumb,
         ];
+    }
+
+    /**
+     * Build a breadcrumb trail (Home → … → category) as [{name, url}] from a
+     * category's ancestry. Best-effort: returns [] on any failure.
+     */
+    private function buildBreadcrumbTrail(int $idCategory, int $idLang, $context): array
+    {
+        $trail = [];
+        try {
+            $cat = new \Category($idCategory, $idLang);
+            if (!Validate::isLoadedObject($cat)) {
+                return $trail;
+            }
+            $parents = $cat->getParentsCategories($idLang); // current → … → root
+            if (!is_array($parents)) {
+                return $trail;
+            }
+            foreach (array_reverse($parents) as $p) {
+                $idc = isset($p['id_category']) ? (int) $p['id_category'] : 0;
+                if ($idc <= 1) {
+                    continue; // skip the technical root category
+                }
+                $name = isset($p['name']) ? (string) $p['name'] : '';
+                if ($name === '') {
+                    continue;
+                }
+                $trail[] = [
+                    'name' => $name,
+                    'url' => $context->link->getCategoryLink($idc, isset($p['link_rewrite']) ? $p['link_rewrite'] : null, $idLang),
+                ];
+            }
+        } catch (\Exception $e) {
+            // best-effort
+        }
+
+        return $trail;
     }
 
     #[McpTool(
