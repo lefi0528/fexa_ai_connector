@@ -149,6 +149,30 @@ class ProductTools
             }
         }
 
+        // --- Product schema enrichment: identifiers, stock, currency ---
+        $quantity = (int) \StockAvailable::getQuantityAvailableByProduct((int) $product->id);
+        $availableForOrder = (bool) $product->available_for_order;
+        $availability = ($quantity > 0 && $availableForOrder)
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock';
+
+        $currencyIso = '';
+        try {
+            $defaultCurrency = \Currency::getDefaultCurrency();
+            if ($defaultCurrency && isset($defaultCurrency->iso_code)) {
+                $currencyIso = (string) $defaultCurrency->iso_code;
+            }
+        } catch (\Exception $e) {
+            // leave empty — caller omits offers without a currency
+        }
+
+        $priceTaxIncl = (float) $product->price;
+        try {
+            $priceTaxIncl = (float) \Product::getPriceStatic((int) $product->id, true);
+        } catch (\Exception $e) {
+            // fall back to the base price already assigned
+        }
+
         return [
             'id' => $product->id,
             'name' => $product->name,
@@ -169,7 +193,17 @@ class ProductTools
                 'images' => $formattedImages
             ],
             'price_tax_excl' => (float)$product->price,
+            'price_tax_incl' => $priceTaxIncl,
+            'currency' => $currencyIso,
             'on_sale' => (bool)$product->on_sale,
+            'ean13' => isset($product->ean13) ? (string) $product->ean13 : '',
+            'isbn' => isset($product->isbn) ? (string) $product->isbn : '',
+            'upc' => isset($product->upc) ? (string) $product->upc : '',
+            'mpn' => isset($product->mpn) ? (string) $product->mpn : '',
+            'condition' => isset($product->condition) ? (string) $product->condition : '',
+            'quantity' => $quantity,
+            'availability' => $availability,
+            'available_for_order' => $availableForOrder,
         ];
     }
 
