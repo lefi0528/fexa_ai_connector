@@ -7,6 +7,7 @@ use PhpMcp\Server\Attributes\Schema;
 use Context;
 use Validate;
 use CMS;
+use PrestaShop\Module\FexaAiConnector\Helper\HtmlSanitizer;
 
 class CmsTools
 {
@@ -133,6 +134,11 @@ class CmsTools
                 $fieldsUpdated[] = $fieldName;
             }
         };
+
+        // Defense in depth: clean AI content before it reaches the shop.
+        if ($content !== null) $content = HtmlSanitizer::richHtml($content);
+        if ($meta_title !== null) $meta_title = HtmlSanitizer::meta($meta_title, 255);
+        if ($meta_description !== null) $meta_description = HtmlSanitizer::meta($meta_description, 512);
 
         $updateField($cms->content, $content, 'content');
         $updateField($cms->meta_title, $meta_title, 'meta_title');

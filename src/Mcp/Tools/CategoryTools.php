@@ -6,6 +6,7 @@ use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
 use Context;
 use Validate;
+use PrestaShop\Module\FexaAiConnector\Helper\HtmlSanitizer;
 use Category;
 
 class CategoryTools
@@ -193,6 +194,11 @@ class CategoryTools
                 $fieldsUpdated[] = $fieldName;
             }
         };
+
+        // Defense in depth: clean AI content before it reaches the shop.
+        if ($description !== null) $description = HtmlSanitizer::richHtml($description);
+        if ($meta_title !== null) $meta_title = HtmlSanitizer::meta($meta_title, 255);
+        if ($meta_description !== null) $meta_description = HtmlSanitizer::meta($meta_description, 512);
 
         $updateField($category->description, $description, 'description');
         $updateField($category->meta_title, $meta_title, 'meta_title');
