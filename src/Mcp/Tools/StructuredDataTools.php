@@ -146,6 +146,49 @@ class StructuredDataTools
     }
 
     #[McpTool(
+        name: 'get_structured_data_bulk',
+        description: 'Read which JSON-LD schema types are stored for many entities at once (one call per page). Returns metadata only (entity_id, schema_type, id_lang), not the payloads.'
+    )]
+    #[Schema(
+        properties: [
+            'entity_type' => ['type' => 'string', 'description' => "One of: 'product', 'category', 'cms'"],
+            'entity_ids' => ['type' => 'array', 'items' => ['type' => 'integer'], 'description' => 'PrestaShop entity IDs (max 200)'],
+            'id_lang' => ['type' => 'integer', 'description' => 'Language ID filter (0 = any, default)'],
+        ],
+        required: ['entity_type', 'entity_ids']
+    )]
+    public function getStructuredDataBulk(string $entity_type, array $entity_ids, ?int $id_lang = 0): array
+    {
+        if (!in_array($entity_type, self::ALLOWED_ENTITIES, true)) {
+            throw new \Exception("Invalid entity_type '$entity_type'");
+        }
+        $id_lang = (int) $id_lang;
+
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', $entity_ids),
+            function ($v) { return $v > 0; }
+        )));
+        $ids = array_slice($ids, 0, 200);
+        if (count($ids) === 0) {
+            return ['entity_type' => $entity_type, 'items' => []];
+        }
+
+        $sql = 'SELECT entity_id, schema_type, id_lang, id_shop FROM `'
+            . _DB_PREFIX_ . self::TABLE . "` WHERE entity_type='" . pSQL($entity_type)
+            . "' AND is_active=1 AND entity_id IN (" . implode(',', $ids) . ')';
+        if ($id_lang) {
+            $sql .= ' AND (id_lang=' . $id_lang . ' OR id_lang=0)';
+        }
+
+        $rows = Db::getInstance()->executeS($sql);
+
+        return [
+            'entity_type' => $entity_type,
+            'items' => is_array($rows) ? $rows : [],
+        ];
+    }
+
+    #[McpTool(
         name: 'delete_structured_data',
         description: 'Remove a stored JSON-LD block (used on rollback).'
     )]
