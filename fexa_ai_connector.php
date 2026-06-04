@@ -41,7 +41,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.3.0';
+        $this->version = '3.4.0';
 
         parent::__construct();
 
@@ -273,6 +273,7 @@ class Fexa_ai_connector extends Module
     {
         return [
             'moduleRoutes',
+            'displayHeader',
         ];
     }
 
@@ -289,5 +290,52 @@ class Fexa_ai_connector extends Module
                 ],
             ],
         ];
+    }
+
+    /**
+     * Inject AI-generated structured data (JSON-LD) into the <head> of the
+     * current product / category / CMS page. The payload is stored by the
+     * set_structured_data MCP tool — never in the (sanitised) description field.
+     */
+    public function hookDisplayHeader($params): string
+    {
+        $controller = isset($this->context->controller->php_self) ? $this->context->controller->php_self : '';
+        $idParam = [
+            'product' => 'id_product',
+            'category' => 'id_category',
+            'cms' => 'id_cms',
+        ];
+
+        if (!isset($idParam[$controller])) {
+            return '';
+        }
+
+        $entityId = (int) Tools::getValue($idParam[$controller]);
+        if ($entityId <= 0) {
+            return '';
+        }
+
+        $idLang = (int) $this->context->language->id;
+        $idShop = (int) $this->context->shop->id;
+
+        $rows = Db::getInstance()->executeS(
+            'SELECT `jsonld` FROM `' . _DB_PREFIX_ . 'fexa_ai_structured_data` '
+            . "WHERE entity_type='" . pSQL($controller) . "' AND entity_id=" . $entityId
+            . ' AND is_active=1 AND (id_lang=' . $idLang . ' OR id_lang=0) '
+            . 'AND (id_shop=' . $idShop . ' OR id_shop=0)'
+        );
+
+        if (!is_array($rows) || count($rows) === 0) {
+            return '';
+        }
+
+        $out = '';
+        foreach ($rows as $row) {
+            // Prevent premature </script> termination (the only way JSON-LD could break out).
+            $safe = str_replace('</', '<\\/', (string) $row['jsonld']);
+            $out .= '<script type="application/ld+json">' . $safe . '</script>' . "\n";
+        }
+
+        return $out;
     }
 }
