@@ -13,7 +13,6 @@ use PrestaShop\Module\FexaAiConnector\Exceptions\ContextException;
 use PrestaShop\Module\FexaAiConnector\Helper\ModuleHelper;
 use PrestaShop\Module\FexaAiConnector\Services\McpService;
 use PrestaShop\Module\FexaAiConnector\Services\McpToolsService;
-use PrestaShopBundle\Controller\Admin\FrameworkBundleAdminController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -21,7 +20,7 @@ if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class FexaAiConfigController extends FrameworkBundleAdminController
+class FexaAiConfigController extends AbstractFexaAdminController
 {
     public function index(Request $request): Response
     {

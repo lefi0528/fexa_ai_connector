@@ -48,7 +48,8 @@ class Fexa_ai_connector extends Module
         $this->displayName = $this->l('Fexa AI Connector');
         $this->description = $this->l('Connect your store with Fexa AI services.');
         $this->confirmUninstall = $this->l('Do you really want to uninstall Fexa AI Connector?');
-        $this->ps_versions_compliancy = ['min' => '8.0.0', 'max' => '9.99.99'];
+        // Compatible PrestaShop 1.7.8 → 9.x. Requires PHP 8.1+ (php-mcp/server).
+        $this->ps_versions_compliancy = ['min' => '1.7.8.0', 'max' => '9.99.99'];
         $this->adminControllers = [];
 
         if ($this->serviceContainer === null) {
