@@ -158,11 +158,21 @@ class Fexa_ai_connector extends Module
         $apiKey = (string) Configuration::get('FEXA_AI_API_KEY');
         $safeKey = htmlspecialchars($apiKey, ENT_QUOTES, 'UTF-8');
 
-        $intro = $this->l('Optimisez automatiquement le SEO de votre boutique avec l\'IA : descriptions, méta, balises ALT et données structurées (FAQ, Produit, fil d\'ariane).');
+        $intro = $this->l('Optimisez automatiquement votre boutique pour le SEO ET la recherche vocale (Google Assistant, Alexa, Siri) grâce à l\'IA : descriptions, méta, balises ALT et données structurées prêtes pour les moteurs de réponse.');
         $access = $this->l('Accéder à Fexa AI');
         $keyTitle = $this->l('Votre clé API');
         $keyHelp = $this->l('Copiez cette clé et collez-la dans votre tableau de bord Fexa AI pour connecter votre boutique.');
         $copy = $this->l('Copier la clé');
+
+        $featTitle = $this->l('Ce que Fexa AI optimise pour vous');
+        $f1t = $this->l('Recherche vocale (AEO)');
+        $f1d = $this->l('Balisage Speakable + FAQ pour être lu à voix haute par les assistants vocaux.');
+        $f2t = $this->l('Données structurées');
+        $f2d = $this->l('JSON-LD Produit, FAQ et fil d\'Ariane injectés automatiquement (rich snippets Google).');
+        $f3t = $this->l('SEO automatisé par IA');
+        $f3d = $this->l('Titres, méta-descriptions, descriptions et balises ALT réécrits et optimisés.');
+        $f4t = $this->l('Moteurs de réponse IA');
+        $f4d = $this->l('Contenu prêt pour ChatGPT, Google SGE et les réponses générées par IA.');
 
         return <<<HTML
 <div style="background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:16px;padding:32px;margin-bottom:24px;color:#fff;box-shadow:0 10px 40px rgba(16,185,129,.3);">
@@ -172,6 +182,27 @@ class Fexa_ai_connector extends Module
       <p style="font-size:1.1em;opacity:.95;margin:0;line-height:1.6;">{$intro}</p>
     </div>
     <a href="https://fexaai.com" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#fff;color:#059669;padding:16px 32px;border-radius:12px;text-decoration:none;font-weight:700;">🌐 {$access}</a>
+  </div>
+</div>
+<div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;border:1px solid #e5e7eb;box-shadow:0 4px 20px rgba(0,0,0,.06);">
+  <h3 style="color:#059669;margin:0 0 20px 0;">✨ {$featTitle}</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">
+    <div style="background:#f0fdf4;border-radius:12px;padding:18px;border:1px solid #bbf7d0;">
+      <div style="font-weight:700;color:#065f46;margin-bottom:6px;">🎙️ {$f1t}</div>
+      <div style="color:#4b5563;font-size:.95em;line-height:1.5;">{$f1d}</div>
+    </div>
+    <div style="background:#f0fdf4;border-radius:12px;padding:18px;border:1px solid #bbf7d0;">
+      <div style="font-weight:700;color:#065f46;margin-bottom:6px;">📊 {$f2t}</div>
+      <div style="color:#4b5563;font-size:.95em;line-height:1.5;">{$f2d}</div>
+    </div>
+    <div style="background:#f0fdf4;border-radius:12px;padding:18px;border:1px solid #bbf7d0;">
+      <div style="font-weight:700;color:#065f46;margin-bottom:6px;">🤖 {$f3t}</div>
+      <div style="color:#4b5563;font-size:.95em;line-height:1.5;">{$f3d}</div>
+    </div>
+    <div style="background:#f0fdf4;border-radius:12px;padding:18px;border:1px solid #bbf7d0;">
+      <div style="font-weight:700;color:#065f46;margin-bottom:6px;">💬 {$f4t}</div>
+      <div style="color:#4b5563;font-size:.95em;line-height:1.5;">{$f4d}</div>
+    </div>
   </div>
 </div>
 <div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;border:2px solid #10b981;box-shadow:0 4px 20px rgba(0,0,0,.08);">
