@@ -68,46 +68,95 @@ class McpService
     {
         header(HttpConstants::JSON_CONTENT_TYPE_HEADER);
 
-        if ((bool) \Configuration::get('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER')) {
-            $this->fetchAllModulesCompliantWithMcp();
-            $this->discover();
+        // Fail fast with an actionable message if the module's cache/log directory
+        // is not writable — the #1 cause of a blank 500 on shared hosting / first run.
+        $cacheDir = dirname(self::CACHE_FILE_PATH);
+        if (!is_dir($cacheDir)) {
+            @mkdir($cacheDir, 0755, true);
+        }
+        if (!is_dir($cacheDir) || !is_writable($cacheDir)) {
+            http_response_code(Response::HTTP_INTERNAL_SERVER_ERROR);
+            echo json_encode([
+                'jsonrpc' => '2.0',
+                'error' => [
+                    'code' => -32000,
+                    'message' => 'Le dossier du module n\'est pas inscriptible : ' . $cacheDir
+                        . '. Donnez les droits d\'écriture (chmod 755) à ce dossier puis réessayez.',
+                ],
+                'id' => null,
+            ]);
+
+            return;
         }
 
-        if ((bool) \Configuration::get('FEXA_AI_SERVER_STARTED') === false) {
-            http_response_code(Response::HTTP_SERVICE_UNAVAILABLE);
-            echo json_encode(['error' => 'MCP server is not running']);
-            exit;
+        try {
+            if ((bool) \Configuration::get('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER')) {
+                $this->fetchAllModulesCompliantWithMcp();
+                $this->discover();
+            }
+
+            if ((bool) \Configuration::get('FEXA_AI_SERVER_STARTED') === false) {
+                http_response_code(Response::HTTP_SERVICE_UNAVAILABLE);
+                echo json_encode(['error' => 'MCP server is not running']);
+
+                return;
+            }
+
+            $transport = new InMemoryTransport();
+            $serverBuilder = Server::make()
+                ->withCapabilities(ServerCapabilities::make(
+                    resources: false,
+                    resourcesSubscribe: false,
+                    resourcesListChanged: false,
+                    prompts: false,
+                    promptsListChanged: false,
+                    tools: true,
+                    toolsListChanged: true,
+                    logging: false,
+                    completions: false
+                ))
+                ->withServerInfo('InMemory Server', $this->serverVersion)
+                ->withCache($this->cache)
+                ->withPaginationLimit(self::PAGINATION_LIMIT);
+
+            $serverBuilder->withLogger($this->logger);
+
+            $this->server = $serverBuilder->build();
+
+            $hotCachingEnabled = (bool) \Configuration::get('FEXA_AI_SERVER_HOT_CACHING_ENABLED');
+
+            if ($this->forceRegenCache || $hotCachingEnabled) {
+                $this->logger->info('Cache are regenerated');
+                $this->discover();
+            }
+
+            $this->server->listen($transport, false);
+        } catch (\Throwable $e) {
+            // Never leak a blank 500: return the real reason as a JSON-RPC error so the
+            // SaaS connection screen (and our logs) can show exactly what failed on PS 9.x.
+            $this->logger->error('MCP request failed', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            if (!headers_sent()) {
+                http_response_code(Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+            echo json_encode([
+                'jsonrpc' => '2.0',
+                'error' => [
+                    'code' => -32000,
+                    'message' => 'Erreur interne du module Fexa AI : ' . $e->getMessage(),
+                    'data' => [
+                        'file' => basename($e->getFile()),
+                        'line' => $e->getLine(),
+                        'type' => get_class($e),
+                    ],
+                ],
+                'id' => null,
+            ]);
         }
-
-        $transport = new InMemoryTransport();
-        $serverBuilder = Server::make()
-            ->withCapabilities(ServerCapabilities::make(
-                resources: false,
-                resourcesSubscribe: false,
-                resourcesListChanged: false,
-                prompts: false,
-                promptsListChanged: false,
-                tools: true,
-                toolsListChanged: true,
-                logging: false,
-                completions: false
-            ))
-            ->withServerInfo('InMemory Server', $this->serverVersion)
-            ->withCache($this->cache)
-            ->withPaginationLimit(self::PAGINATION_LIMIT);
-
-        $serverBuilder->withLogger($this->logger);
-
-        $this->server = $serverBuilder->build();
-
-        $hotCachingEnabled = (bool) \Configuration::get('FEXA_AI_SERVER_HOT_CACHING_ENABLED');
-
-        if ($this->forceRegenCache || $hotCachingEnabled) {
-            $this->logger->info('Cache are regenerated');
-            $this->discover();
-        }
-
-        $this->server->listen($transport, false);
     }
 
     public function storeNewModuleRegistered(int $moduleId): void
