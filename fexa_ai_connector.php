@@ -41,7 +41,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.4.4';
+        $this->version = '3.4.5';
 
         parent::__construct();
 
@@ -304,8 +304,11 @@ HTML;
     {
         try {
             return $this->serviceContainer->getService($serviceName);
-        } catch (\Exception $e) {
-            // Pas grave, on continue
+        } catch (\Throwable $e) {
+            // Don't fail hard, but leave a trace: a silent null here surfaces downstream
+            // as a confusing "service is not available" 500 with no cause in the logs.
+            error_log('[fexa_ai_connector] getService("' . $serviceName . '") failed: '
+                . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
         }
 
         if (version_compare(_PS_VERSION_, '8.0.0', '>=')) {

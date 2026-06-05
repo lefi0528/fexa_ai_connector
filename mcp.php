@@ -36,6 +36,11 @@ try {
     $serviceName = 'PrestaShop\\Module\\FexaAiConnector\\Services\\McpService';
     $mcpService = $module->getService($serviceName);
 
+    // Fallback to the concrete DI id when FQCN resolution is unavailable.
+    if (!$mcpService) {
+        $mcpService = $module->getService('fexa_ai_connector.mcp_service');
+    }
+
     if ($mcpService) {
         $mcpService->executeHttpMcpRequest();
     } else {

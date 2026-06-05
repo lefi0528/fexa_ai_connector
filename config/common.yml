@@ -23,6 +23,13 @@ services:
       - '@fexa_ai_connector.service.tools'
       - '@fexa_ai_connector.service.modules'
 
+  # FQCN alias so the front controller can resolve the service via McpService::class.
+  # The compiled Symfony container only knows the id above, not the class name, so
+  # get(McpService::class) would otherwise throw ServiceNotFound on a real shop.
+  PrestaShop\Module\FexaAiConnector\Services\McpService:
+    alias: 'fexa_ai_connector.mcp_service'
+    public: true
+
   fexa_ai_connector.service.tools:
     class: PrestaShop\Module\FexaAiConnector\Services\McpToolsService
     arguments:

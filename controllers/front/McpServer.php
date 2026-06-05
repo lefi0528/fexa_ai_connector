@@ -62,10 +62,26 @@ class Fexa_ai_connectorMcpServerModuleFrontController extends ModuleFrontControl
 
         $mcpService = $this->module->getService(McpService::class);
 
-        if ($mcpService === null) {
+        // Fallback: some PrestaShop builds (and stale compiled containers) don't
+        // resolve a service by its FQCN when the DI id differs. Try the concrete id.
+        if (!$mcpService instanceof McpService) {
+            $mcpService = $this->module->getService('fexa_ai_connector.mcp_service');
+        }
+
+        if (!$mcpService instanceof McpService) {
             http_response_code(500);
             header('Content-Type: application/json');
-            echo json_encode(['error' => 'McpService is not available']);
+            echo json_encode([
+                'jsonrpc' => '2.0',
+                'error' => [
+                    'code' => -32000,
+                    'message' => 'Le service MCP du module n\'a pas pu être initialisé. '
+                        . 'Videz le cache de PrestaShop (Paramètres avancés → Performances → Vider le cache), '
+                        . 'puis réessayez. Si le problème persiste, vérifiez que le dossier var/cache est '
+                        . 'inscriptible par le serveur web.',
+                ],
+                'id' => null,
+            ]);
             exit;
         }
 
