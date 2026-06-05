@@ -89,24 +89,26 @@ class CmsTools
 
     #[McpTool(
         name: 'update_cms_seo',
-        description: 'Update SEO fields and content of a CMS page.'
+        description: 'Update SEO fields, content and URL slug of a CMS page. If "link_rewrite" is omitted but "meta_title" is set, the slug is auto-generated from the translated title.'
     )]
     #[Schema(
         properties: [
             'id_cms' => ['type' => 'integer', 'description' => 'CMS ID'],
             'id_lang' => ['type' => 'integer', 'description' => 'Language ID'],
             'content' => ['type' => 'string', 'description' => 'Main Content (HTML)'],
-            'meta_title' => ['type' => 'string', 'description' => 'Meta Title'],
-            'meta_description' => ['type' => 'string', 'description' => 'Meta Description']
+            'meta_title' => ['type' => 'string', 'description' => 'Meta Title (also the page title)'],
+            'meta_description' => ['type' => 'string', 'description' => 'Meta Description'],
+            'link_rewrite' => ['type' => 'string', 'description' => 'New URL slug. If omitted but "meta_title" is set, derived from the title.']
         ],
         required: ['id_cms']
     )]
     public function updateCmsSeo(
-        int $id_cms, 
-        ?int $id_lang = null, 
-        ?string $content = null, 
-        ?string $meta_title = null, 
-        ?string $meta_description = null
+        int $id_cms,
+        ?int $id_lang = null,
+        ?string $content = null,
+        ?string $meta_title = null,
+        ?string $meta_description = null,
+        ?string $link_rewrite = null
     ): array
     {
         $context = Context::getContext();
@@ -128,7 +130,7 @@ class CmsTools
         $updateField = function(&$fieldArray, $newValue, $fieldName) use ($id_lang, &$fieldsUpdated) {
             if ($newValue !== null) {
                 if (!is_array($fieldArray)) {
-                    $fieldArray = [$id_lang => $fieldArray]; 
+                    $fieldArray = [$id_lang => $fieldArray];
                 }
                 $fieldArray[$id_lang] = $newValue;
                 $fieldsUpdated[] = $fieldName;
@@ -140,9 +142,21 @@ class CmsTools
         if ($meta_title !== null) $meta_title = HtmlSanitizer::meta($meta_title, 255);
         if ($meta_description !== null) $meta_description = HtmlSanitizer::meta($meta_description, 512);
 
+        // URL slug: only when explicitly provided (the SaaS sends the translated title
+        // here and Tools::str2url turns it into a slug). Not derived from meta_title
+        // implicitly, so ordinary SEO optimization never changes existing CMS URLs.
+        $slug = null;
+        if ($link_rewrite !== null && trim($link_rewrite) !== '') {
+            $slug = HtmlSanitizer::slug($link_rewrite);
+            if ($slug === '') {
+                $slug = null;
+            }
+        }
+
         $updateField($cms->content, $content, 'content');
         $updateField($cms->meta_title, $meta_title, 'meta_title');
         $updateField($cms->meta_description, $meta_description, 'meta_description');
+        $updateField($cms->link_rewrite, $slug, 'link_rewrite');
 
         if (empty($fieldsUpdated)) {
             return ['status' => 'no_changes'];

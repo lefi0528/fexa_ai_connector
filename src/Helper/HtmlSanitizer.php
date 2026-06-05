@@ -42,4 +42,30 @@ class HtmlSanitizer
 
         return strlen($text) > $maxLen ? trim(substr($text, 0, $maxLen)) : $text;
     }
+
+    /**
+     * Plain product/category name: strip tags, remove characters PrestaShop's
+     * Validate::isCatalogName forbids (<>;=#{}), and cap length. Keeps save() from
+     * rejecting AI-translated names.
+     */
+    public static function catalogName(string $text, int $maxLen = 128): string
+    {
+        $text = self::meta($text, $maxLen);
+        $text = preg_replace('/[<>;=#{}]/u', '', $text);
+
+        return trim((string) $text);
+    }
+
+    /**
+     * URL slug (link_rewrite) from arbitrary text using PrestaShop's locale-aware
+     * Tools::str2url. Returns '' when the input has no URL-safe characters (e.g. a
+     * fully non-latin string and PS_ALLOW_ACCENTED_CHARS_URL disabled) so the caller
+     * can decide to keep the existing slug rather than write an empty one.
+     */
+    public static function slug(string $text): string
+    {
+        $slug = (string) \Tools::str2url($text);
+
+        return \Validate::isLinkRewrite($slug) ? $slug : '';
+    }
 }

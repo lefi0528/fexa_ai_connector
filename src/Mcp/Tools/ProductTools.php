@@ -255,12 +255,14 @@ class ProductTools
 
     #[McpTool(
         name: 'update_product_seo',
-        description: 'Update SEO fields and descriptions of a product. Supports partial updates (pass null to keep existing value).'
+        description: 'Update SEO fields, name and URL slug of a product. Supports partial updates (pass null to keep existing value). If "name" is provided without "link_rewrite", the URL slug is auto-generated from the translated name.'
     )]
     #[Schema(
         properties: [
             'id_product' => ['type' => 'integer', 'description' => 'Product ID'],
             'id_lang' => ['type' => 'integer', 'description' => 'Language ID to update'],
+            'name' => ['type' => 'string', 'description' => 'New product name/title (plain text). Used for translations.'],
+            'link_rewrite' => ['type' => 'string', 'description' => 'New URL slug. If omitted but "name" is set, derived from the name.'],
             'description_short' => ['type' => 'string', 'description' => 'New short description (HTML allowed)'],
             'description' => ['type' => 'string', 'description' => 'New long description (HTML allowed)'],
             'meta_title' => ['type' => 'string', 'description' => 'New Meta Title'],
@@ -271,6 +273,8 @@ class ProductTools
     public function updateProductSeo(
         int $id_product,
         ?int $id_lang = null,
+        ?string $name = null,
+        ?string $link_rewrite = null,
         ?string $description_short = null,
         ?string $description = null,
         ?string $meta_title = null,
@@ -302,11 +306,26 @@ class ProductTools
         };
 
         // Defense in depth: clean AI content before it reaches the shop.
+        if ($name !== null) $name = HtmlSanitizer::catalogName($name, 128);
         if ($description_short !== null) $description_short = HtmlSanitizer::richHtml($description_short);
         if ($description !== null) $description = HtmlSanitizer::richHtml($description);
         if ($meta_title !== null) $meta_title = HtmlSanitizer::meta($meta_title, 255);
         if ($meta_description !== null) $meta_description = HtmlSanitizer::meta($meta_description, 512);
 
+        // URL slug: explicit value wins; otherwise derive from the (translated) name.
+        // Skip writing an empty slug (e.g. fully non-latin input) to avoid breaking URLs.
+        $slug = null;
+        if ($link_rewrite !== null && trim($link_rewrite) !== '') {
+            $slug = HtmlSanitizer::slug($link_rewrite);
+        } elseif ($name !== null && $name !== '') {
+            $slug = HtmlSanitizer::slug($name);
+        }
+        if ($slug === '') {
+            $slug = null;
+        }
+
+        $updateField($product->name, ($name !== null && $name !== '') ? $name : null, 'name');
+        $updateField($product->link_rewrite, $slug, 'link_rewrite');
         $updateField($product->description_short, $description_short, 'description_short');
         $updateField($product->description, $description, 'description');
         $updateField($product->meta_title, $meta_title, 'meta_title');

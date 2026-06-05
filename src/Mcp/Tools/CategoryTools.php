@@ -151,12 +151,14 @@ class CategoryTools
 
     #[McpTool(
         name: 'update_category_seo',
-        description: 'Update SEO fields and description of a category. Supports partial updates.'
+        description: 'Update SEO fields, name and URL slug of a category. Supports partial updates. If "name" is provided without "link_rewrite", the URL slug is auto-generated from the translated name.'
     )]
     #[Schema(
         properties: [
             'id_category' => ['type' => 'integer', 'description' => 'Category ID'],
             'id_lang' => ['type' => 'integer', 'description' => 'Language ID to update'],
+            'name' => ['type' => 'string', 'description' => 'New category name (plain text). Used for translations.'],
+            'link_rewrite' => ['type' => 'string', 'description' => 'New URL slug. If omitted but "name" is set, derived from the name.'],
             'description' => ['type' => 'string', 'description' => 'New description (HTML allowed)'],
             'meta_title' => ['type' => 'string', 'description' => 'New Meta Title'],
             'meta_description' => ['type' => 'string', 'description' => 'New Meta Description'],
@@ -166,6 +168,8 @@ class CategoryTools
     public function updateCategorySeo(
         int $id_category,
         ?int $id_lang = null,
+        ?string $name = null,
+        ?string $link_rewrite = null,
         ?string $description = null,
         ?string $meta_title = null,
         ?string $meta_description = null
@@ -196,10 +200,24 @@ class CategoryTools
         };
 
         // Defense in depth: clean AI content before it reaches the shop.
+        if ($name !== null) $name = HtmlSanitizer::catalogName($name, 128);
         if ($description !== null) $description = HtmlSanitizer::richHtml($description);
         if ($meta_title !== null) $meta_title = HtmlSanitizer::meta($meta_title, 255);
         if ($meta_description !== null) $meta_description = HtmlSanitizer::meta($meta_description, 512);
 
+        // URL slug: explicit wins; else derive from the (translated) name. Skip empty.
+        $slug = null;
+        if ($link_rewrite !== null && trim($link_rewrite) !== '') {
+            $slug = HtmlSanitizer::slug($link_rewrite);
+        } elseif ($name !== null && $name !== '') {
+            $slug = HtmlSanitizer::slug($name);
+        }
+        if ($slug === '') {
+            $slug = null;
+        }
+
+        $updateField($category->name, ($name !== null && $name !== '') ? $name : null, 'name');
+        $updateField($category->link_rewrite, $slug, 'link_rewrite');
         $updateField($category->description, $description, 'description');
         $updateField($category->meta_title, $meta_title, 'meta_title');
         $updateField($category->meta_description, $meta_description, 'meta_description');
