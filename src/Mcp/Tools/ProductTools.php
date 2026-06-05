@@ -263,6 +263,7 @@ class ProductTools
             'id_lang' => ['type' => 'integer', 'description' => 'Language ID to update'],
             'name' => ['type' => 'string', 'description' => 'New product name/title (plain text). Used for translations.'],
             'link_rewrite' => ['type' => 'string', 'description' => 'New URL slug. If omitted but "name" is set, derived from the name.'],
+            'update_slug' => ['type' => 'boolean', 'description' => 'Whether to update the URL slug (default true). Set false to keep the existing slug — e.g. when re-translating a language to preserve already-indexed URLs.'],
             'description_short' => ['type' => 'string', 'description' => 'New short description (HTML allowed)'],
             'description' => ['type' => 'string', 'description' => 'New long description (HTML allowed)'],
             'meta_title' => ['type' => 'string', 'description' => 'New Meta Title'],
@@ -275,6 +276,7 @@ class ProductTools
         ?int $id_lang = null,
         ?string $name = null,
         ?string $link_rewrite = null,
+        bool $update_slug = true,
         ?string $description_short = null,
         ?string $description = null,
         ?string $meta_title = null,
@@ -320,8 +322,8 @@ class ProductTools
         } elseif ($name !== null && $name !== '') {
             $slug = HtmlSanitizer::slug($name);
         }
-        if ($slug === '') {
-            $slug = null;
+        if ($slug === '' || !$update_slug) {
+            $slug = null; // keep existing slug (empty/non-latin, or caller opted out)
         }
 
         $updateField($product->name, ($name !== null && $name !== '') ? $name : null, 'name');

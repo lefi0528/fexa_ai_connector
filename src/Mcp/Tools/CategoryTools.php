@@ -159,6 +159,7 @@ class CategoryTools
             'id_lang' => ['type' => 'integer', 'description' => 'Language ID to update'],
             'name' => ['type' => 'string', 'description' => 'New category name (plain text). Used for translations.'],
             'link_rewrite' => ['type' => 'string', 'description' => 'New URL slug. If omitted but "name" is set, derived from the name.'],
+            'update_slug' => ['type' => 'boolean', 'description' => 'Whether to update the URL slug (default true). Set false to keep the existing slug — e.g. when re-translating a language to preserve already-indexed URLs.'],
             'description' => ['type' => 'string', 'description' => 'New description (HTML allowed)'],
             'meta_title' => ['type' => 'string', 'description' => 'New Meta Title'],
             'meta_description' => ['type' => 'string', 'description' => 'New Meta Description'],
@@ -170,6 +171,7 @@ class CategoryTools
         ?int $id_lang = null,
         ?string $name = null,
         ?string $link_rewrite = null,
+        bool $update_slug = true,
         ?string $description = null,
         ?string $meta_title = null,
         ?string $meta_description = null
@@ -212,8 +214,8 @@ class CategoryTools
         } elseif ($name !== null && $name !== '') {
             $slug = HtmlSanitizer::slug($name);
         }
-        if ($slug === '') {
-            $slug = null;
+        if ($slug === '' || !$update_slug) {
+            $slug = null; // keep existing slug (empty/non-latin, or caller opted out)
         }
 
         $updateField($category->name, ($name !== null && $name !== '') ? $name : null, 'name');

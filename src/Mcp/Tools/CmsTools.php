@@ -98,7 +98,8 @@ class CmsTools
             'content' => ['type' => 'string', 'description' => 'Main Content (HTML)'],
             'meta_title' => ['type' => 'string', 'description' => 'Meta Title (also the page title)'],
             'meta_description' => ['type' => 'string', 'description' => 'Meta Description'],
-            'link_rewrite' => ['type' => 'string', 'description' => 'New URL slug. If omitted but "meta_title" is set, derived from the title.']
+            'link_rewrite' => ['type' => 'string', 'description' => 'New URL slug. If omitted but "meta_title" is set, derived from the title.'],
+            'update_slug' => ['type' => 'boolean', 'description' => 'Whether to update the URL slug (default true). Set false to keep the existing slug — e.g. when re-translating a language to preserve already-indexed URLs.']
         ],
         required: ['id_cms']
     )]
@@ -108,7 +109,8 @@ class CmsTools
         ?string $content = null,
         ?string $meta_title = null,
         ?string $meta_description = null,
-        ?string $link_rewrite = null
+        ?string $link_rewrite = null,
+        bool $update_slug = true
     ): array
     {
         $context = Context::getContext();
@@ -146,7 +148,7 @@ class CmsTools
         // here and Tools::str2url turns it into a slug). Not derived from meta_title
         // implicitly, so ordinary SEO optimization never changes existing CMS URLs.
         $slug = null;
-        if ($link_rewrite !== null && trim($link_rewrite) !== '') {
+        if ($update_slug && $link_rewrite !== null && trim($link_rewrite) !== '') {
             $slug = HtmlSanitizer::slug($link_rewrite);
             if ($slug === '') {
                 $slug = null;
