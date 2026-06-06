@@ -85,6 +85,51 @@ class ProductTools
     }
 
     #[McpTool(
+        name: 'count_catalog',
+        description: 'Return the exact total number of products, categories and CMS pages in the shop. Lightweight COUNT queries — use this for scan size estimates instead of paginating list_products.'
+    )]
+    #[Schema(
+        properties: [
+            'onlyActive' => ['type' => 'boolean', 'description' => 'Count only active items, matching list_products default (default true)'],
+        ],
+        required: []
+    )]
+    public function countCatalog(bool $onlyActive = true): array
+    {
+        $context = Context::getContext();
+        $idShop = ($context && isset($context->shop) && isset($context->shop->id))
+            ? (int) $context->shop->id
+            : (int) \Configuration::get('PS_SHOP_DEFAULT');
+
+        $db = \Db::getInstance();
+        $p = _DB_PREFIX_;
+
+        $products = (int) $db->getValue(
+            'SELECT COUNT(DISTINCT p.id_product) FROM `' . $p . 'product` p '
+            . 'INNER JOIN `' . $p . 'product_shop` ps ON ps.id_product = p.id_product AND ps.id_shop = ' . $idShop
+            . ($onlyActive ? ' WHERE ps.active = 1' : '')
+        );
+
+        $categories = (int) $db->getValue(
+            'SELECT COUNT(DISTINCT c.id_category) FROM `' . $p . 'category` c '
+            . 'INNER JOIN `' . $p . 'category_shop` cs ON cs.id_category = c.id_category AND cs.id_shop = ' . $idShop
+            . ($onlyActive ? ' WHERE c.active = 1' : '')
+        );
+
+        $cms = (int) $db->getValue(
+            'SELECT COUNT(DISTINCT m.id_cms) FROM `' . $p . 'cms` m '
+            . 'INNER JOIN `' . $p . 'cms_shop` mshop ON mshop.id_cms = m.id_cms AND mshop.id_shop = ' . $idShop
+            . ($onlyActive ? ' WHERE m.active = 1' : '')
+        );
+
+        return [
+            'products' => $products,
+            'categories' => $categories,
+            'cms' => $cms,
+        ];
+    }
+
+    #[McpTool(
         name: 'get_product_details',
         description: 'Get full details of a specific product (descriptions, meta, features) for SEO analysis.'
     )]
