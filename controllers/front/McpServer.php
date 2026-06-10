@@ -50,7 +50,10 @@ class Fexa_ai_connectorMcpServerModuleFrontController extends ModuleFrontControl
         }
         // 3. Fallback: token or api_key query param (legacy)
         if (empty($apiKey)) {
-            $apiKey = \Tools::getValue('token') ?: \Tools::getValue('api_key');
+            // Cast to string: Tools::getValue returns false when absent, and passing
+            // false to hash_equals() is a fatal TypeError on PHP 8 (the endpoint would
+            // return HTTP 200 with a PHP stack trace instead of a clean 403 JSON).
+            $apiKey = (string) (\Tools::getValue('token') ?: \Tools::getValue('api_key'));
         }
 
         if (!$storedKey || !hash_equals($storedKey, $apiKey)) {
