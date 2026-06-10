@@ -52,11 +52,23 @@ class Fexa_ai_connector extends Module
         $this->ps_versions_compliancy = ['min' => '1.7.8.0', 'max' => '9.99.99'];
         $this->adminControllers = [];
 
+        // Defensive: the module constructor must NEVER throw. On PrestaShop 9
+        // (Symfony 6) building the service container can fail (e.g. a module-lib
+        // version mismatch). If it throws here, Module::getInstance() returns null
+        // and PS9 core then fatals on `method_exists(null, 'getContent')`
+        // (ModuleController::configureModuleAction) — bricking the whole
+        // back-office. We degrade gracefully instead: the container is only used
+        // lazily via getService(), which already handles a null container.
         if ($this->serviceContainer === null) {
-            $this->serviceContainer = new ServiceContainer(
-                (string) $this->name,
-                $this->getLocalPath()
-            );
+            try {
+                $this->serviceContainer = new ServiceContainer(
+                    (string) $this->name,
+                    $this->getLocalPath()
+                );
+            } catch (\Throwable $e) {
+                $this->serviceContainer = null;
+                error_log('[fexa_ai_connector] ServiceContainer init failed (PS9?): ' . $e->getMessage());
+            }
         }
     }
 
