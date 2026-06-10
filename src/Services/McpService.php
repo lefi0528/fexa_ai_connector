@@ -12,14 +12,14 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Services;
 
-use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
 use PhpMcp\Schema\ServerCapabilities;
 use PhpMcp\Server\Server;
 use PrestaShop\Module\FexaAiConnector\Http\HttpConstants;
 use PrestaShop\Module\FexaAiConnector\Server\CustomDiscoverer;
 use PrestaShop\Module\FexaAiConnector\Server\CustomFileCache;
 use PrestaShop\Module\FexaAiConnector\Server\InMemoryTransport;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -33,7 +33,7 @@ class McpService
     private const PAGINATION_LIMIT = 999;
 
     private CacheInterface $cache;
-    private Logger $logger;
+    private LoggerInterface $logger;
     private Server $server;
     private McpToolsService $mcpToolsService;
     private McpModulesRegisteredService $mcpModulesRegisteredService;
@@ -50,18 +50,14 @@ class McpService
         }
 
         $this->cache = new CustomFileCache(self::CACHE_FILE_PATH);
-        $this->logger = new Logger('mcp');
+        // PSR-3 logger. We intentionally do NOT use Monolog here: PrestaShop core
+        // ships its own (older) Monolog, and bundling Monolog in the module made
+        // its classes shadow the core ones, causing a fatal Compile Error on
+        // PS8/PS9 (SyslogFormatter::format signature mismatch). php-mcp only needs
+        // a Psr\Log\LoggerInterface, so a NullLogger is enough and conflict-free.
+        $this->logger = new NullLogger();
         $this->mcpToolsService = $mcpToolsService;
         $this->mcpModulesRegisteredService = $mcpModulesRegisteredService;
-
-        if (\Configuration::get('FEXA_AI_SERVER_LOGS_ENABLED')) {
-            $this->logger->pushHandler(
-                new StreamHandler(
-                    _PS_MODULE_DIR_ . 'fexa_ai_connector/.mcp/.logs',
-                    Logger::DEBUG
-                )
-            );
-        }
     }
 
     public function executeHttpMcpRequest(): void
