@@ -34,7 +34,6 @@
     "ext-json": "*",
     "php-mcp/server": "^3.3.0",
     "psr/log": "^3.0",
-    "monolog/monolog": "^3.9",
     "php-mcp/client": "^1.0",
     "prestashop/module-lib-mbo-installer": "^3.0",
     "prestashop/module-lib-service-container": "^2.0"
