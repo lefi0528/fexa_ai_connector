@@ -41,7 +41,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.4.8';
+        $this->version = '3.5.0';
 
         parent::__construct();
 
@@ -83,6 +83,12 @@ class Fexa_ai_connector extends Module
             && Configuration::updateValue('FEXA_AI_SERVER_FIRST_DISCOVERY_DONE', false)
             && Configuration::updateValue('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER', true)
             && Configuration::updateValue('FEXA_AI_SERVER_LOGS_ENABLED', false)
+            // Per-schema injection toggles. Safe defaults: FAQPage ON (themes never emit it),
+            // Product & BreadcrumbList OFF (PrestaShop themes already emit these natively —
+            // emitting them again would create duplicate JSON-LD nodes that can hurt SEO).
+            && Configuration::updateValue('FEXA_AI_EMIT_FAQPAGE', '1')
+            && Configuration::updateValue('FEXA_AI_EMIT_PRODUCT', '0')
+            && Configuration::updateValue('FEXA_AI_EMIT_BREADCRUMB', '0')
             && $this->ensureApiKey();
     }
 
@@ -94,6 +100,9 @@ class Fexa_ai_connector extends Module
             && Configuration::deleteByName('FEXA_AI_SERVER_FIRST_DISCOVERY_DONE')
             && Configuration::deleteByName('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER')
             && Configuration::deleteByName('FEXA_AI_SERVER_LOGS_ENABLED')
+            && Configuration::deleteByName('FEXA_AI_EMIT_FAQPAGE')
+            && Configuration::deleteByName('FEXA_AI_EMIT_PRODUCT')
+            && Configuration::deleteByName('FEXA_AI_EMIT_BREADCRUMB')
             && Configuration::deleteByName('FEXA_AI_API_KEY')
             && Configuration::deleteByName(self::UPDATE_CHECK_CACHE_KEY)
             && Configuration::deleteByName(self::UPDATE_CHECK_CACHE_KEY . '_TS');
@@ -169,6 +178,27 @@ class Fexa_ai_connector extends Module
         // Rendered as legacy module content (no Symfony admin controller): works
         // identically on PrestaShop 1.7.8 / 8 / 9. PS 9 removed the controller base
         // class infrastructure used previously, which threw "has no container set".
+        // Handle the structured-data toggle form (saved before rendering the page).
+        $schemaSaved = false;
+        if (Tools::isSubmit('submitFexaSchemas')) {
+            Configuration::updateValue('FEXA_AI_EMIT_FAQPAGE', Tools::getValue('emit_faqpage') ? '1' : '0');
+            Configuration::updateValue('FEXA_AI_EMIT_PRODUCT', Tools::getValue('emit_product') ? '1' : '0');
+            Configuration::updateValue('FEXA_AI_EMIT_BREADCRUMB', Tools::getValue('emit_breadcrumb') ? '1' : '0');
+            $schemaSaved = true;
+        }
+        $emitFaqChk = $this->isSchemaEnabled('FAQPage') ? 'checked' : '';
+        $emitProductChk = $this->isSchemaEnabled('Product') ? 'checked' : '';
+        $emitBreadcrumbChk = $this->isSchemaEnabled('BreadcrumbList') ? 'checked' : '';
+
+        $schemaTitle = $this->l('Données structurées (JSON-LD)');
+        $schemaIntro = $this->l('Choisissez les schémas que Fexa injecte. Astuce : la plupart des thèmes PrestaShop émettent déjà Product et Fil d\'Ariane — les laisser désactivés évite les doublons qui peuvent nuire au SEO. FAQ est unique à Fexa, gardez-le activé.');
+        $lblFaq = $this->l('FAQ (FAQPage) — recommandé, unique à Fexa');
+        $lblProduct = $this->l('Produit (Product) — à activer seulement si votre thème ne le fournit pas');
+        $lblBreadcrumb = $this->l('Fil d\'Ariane (BreadcrumbList) — à activer seulement si votre thème ne le fournit pas');
+        $saveLbl = $this->l('Enregistrer');
+        $savedLbl = $this->l('Réglages enregistrés.');
+        $savedHtml = $schemaSaved ? '<div style="background:#dcfce7;color:#065f46;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-weight:600;">✅ ' . $savedLbl . '</div>' : '';
+
         $apiKey = (string) Configuration::get('FEXA_AI_API_KEY');
         $safeKey = htmlspecialchars($apiKey, ENT_QUOTES, 'UTF-8');
 
@@ -224,6 +254,23 @@ class Fexa_ai_connector extends Module
   <p style="color:#4b5563;margin:0 0 16px 0;">{$keyHelp}</p>
   <input id="fexa-api-key" type="text" readonly value="{$safeKey}" onclick="this.select()" style="width:100%;background:#f3f4f6;padding:14px 18px;font-size:1.1em;border-radius:10px;border:1px solid #e5e7eb;font-family:monospace;color:#1f2937;box-sizing:border-box;"/>
   <button type="button" class="btn btn-primary" style="margin-top:16px;" onclick="var e=document.getElementById('fexa-api-key');e.select();document.execCommand('copy');this.innerHTML='✅';">📋 {$copy}</button>
+</div>
+<div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;border:1px solid #e5e7eb;box-shadow:0 4px 20px rgba(0,0,0,.06);">
+  <h3 style="color:#059669;margin:0 0 8px 0;">📊 {$schemaTitle}</h3>
+  <p style="color:#4b5563;margin:0 0 16px 0;line-height:1.6;">{$schemaIntro}</p>
+  {$savedHtml}
+  <form method="post" action="">
+    <label style="display:flex;align-items:center;gap:10px;padding:10px 0;color:#1f2937;font-weight:600;">
+      <input type="checkbox" name="emit_faqpage" value="1" {$emitFaqChk}/> {$lblFaq}
+    </label>
+    <label style="display:flex;align-items:center;gap:10px;padding:10px 0;color:#1f2937;font-weight:600;">
+      <input type="checkbox" name="emit_product" value="1" {$emitProductChk}/> {$lblProduct}
+    </label>
+    <label style="display:flex;align-items:center;gap:10px;padding:10px 0;color:#1f2937;font-weight:600;">
+      <input type="checkbox" name="emit_breadcrumb" value="1" {$emitBreadcrumbChk}/> {$lblBreadcrumb}
+    </label>
+    <button type="submit" name="submitFexaSchemas" value="1" class="btn btn-primary" style="margin-top:16px;">💾 {$saveLbl}</button>
+  </form>
 </div>
 HTML;
     }
@@ -391,7 +438,7 @@ HTML;
         $idShop = (int) $this->context->shop->id;
 
         $rows = Db::getInstance()->executeS(
-            'SELECT `jsonld` FROM `' . _DB_PREFIX_ . 'fexa_ai_structured_data` '
+            'SELECT `jsonld`, `schema_type` FROM `' . _DB_PREFIX_ . 'fexa_ai_structured_data` '
             . "WHERE entity_type='" . pSQL($controller) . "' AND entity_id=" . $entityId
             . ' AND is_active=1 AND (id_lang=' . $idLang . ' OR id_lang=0) '
             . 'AND (id_shop=' . $idShop . ' OR id_shop=0)'
@@ -403,11 +450,41 @@ HTML;
 
         $out = '';
         foreach ($rows as $row) {
+            // Skip schema types the merchant disabled (e.g. Product / BreadcrumbList already
+            // emitted natively by the theme) to avoid duplicate JSON-LD nodes that hurt SEO.
+            if (!$this->isSchemaEnabled((string) $row['schema_type'])) {
+                continue;
+            }
             // Prevent premature </script> termination (the only way JSON-LD could break out).
             $safe = str_replace('</', '<\\/', (string) $row['jsonld']);
             $out .= '<script type="application/ld+json">' . $safe . '</script>' . "\n";
         }
 
         return $out;
+    }
+
+    /**
+     * Whether a given JSON-LD schema_type should be injected, per the module config.
+     * Safe defaults when never configured (fresh install or pre-toggle upgrade):
+     * FAQPage ON (themes never provide it — pure value-add), Product & BreadcrumbList OFF
+     * (PrestaShop themes already emit these natively — re-emitting duplicates the node).
+     * Unknown types (e.g. SpeakableSpecification) are always injected.
+     */
+    private function isSchemaEnabled(string $schemaType): bool
+    {
+        $map = [
+            'FAQPage' => ['FEXA_AI_EMIT_FAQPAGE', '1'],
+            'Product' => ['FEXA_AI_EMIT_PRODUCT', '0'],
+            'BreadcrumbList' => ['FEXA_AI_EMIT_BREADCRUMB', '0'],
+        ];
+        if (!isset($map[$schemaType])) {
+            return true;
+        }
+        list($key, $default) = $map[$schemaType];
+        $val = Configuration::get($key);
+        if ($val === false || $val === null || $val === '') {
+            return $default === '1';
+        }
+        return (bool) (int) $val;
     }
 }
