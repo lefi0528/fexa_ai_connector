@@ -41,7 +41,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.6.4';
+        $this->version = '3.6.5';
 
         parent::__construct();
 
@@ -202,7 +202,7 @@ class Fexa_ai_connector extends Module
         $apiKey = (string) Configuration::get('FEXA_AI_API_KEY');
         $safeKey = htmlspecialchars($apiKey, ENT_QUOTES, 'UTF-8');
 
-        $intro = $this->l('Optimisez automatiquement votre boutique pour le SEO ET la recherche vocale (Google Assistant, Alexa, Siri) grâce à l\'IA : descriptions, méta, balises ALT et données structurées prêtes pour les moteurs de réponse.');
+        $intro = $this->l('Optimisez automatiquement votre boutique pour le SEO ET la recherche vocale (Google Assistant, Alexa, Siri) grâce à l\'IA : descriptions, méta, balises ALT, données structurées et fichier /llms.txt prêts pour les moteurs de réponse.');
         $access = $this->l('Accéder à Fexa AI');
         $keyTitle = $this->l('Votre clé API');
         $keyHelp = $this->l('Copiez cette clé et collez-la dans votre tableau de bord Fexa AI pour connecter votre boutique.');
@@ -217,6 +217,8 @@ class Fexa_ai_connector extends Module
         $f3d = $this->l('Titres, méta-descriptions, descriptions et balises ALT réécrits et optimisés.');
         $f4t = $this->l('Moteurs de réponse IA');
         $f4d = $this->l('Contenu prêt pour ChatGPT, Google SGE et les réponses générées par IA.');
+        $f5t = $this->l('Fichier /llms.txt (nouveau)');
+        $f5d = $this->l('Une carte de votre boutique lisible par les IA, générée depuis votre catalogue et servie automatiquement à la racine (/llms.txt).');
 
         return <<<HTML
 <div style="background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:16px;padding:32px;margin-bottom:24px;color:#fff;box-shadow:0 10px 40px rgba(16,185,129,.3);">
@@ -246,6 +248,10 @@ class Fexa_ai_connector extends Module
     <div style="background:#f0fdf4;border-radius:12px;padding:18px;border:1px solid #bbf7d0;">
       <div style="font-weight:700;color:#065f46;margin-bottom:6px;">💬 {$f4t}</div>
       <div style="color:#4b5563;font-size:.95em;line-height:1.5;">{$f4d}</div>
+    </div>
+    <div style="background:#ecfdf5;border-radius:12px;padding:18px;border:1px solid #6ee7b7;">
+      <div style="font-weight:700;color:#065f46;margin-bottom:6px;">📄 {$f5t}</div>
+      <div style="color:#4b5563;font-size:.95em;line-height:1.5;">{$f5d}</div>
     </div>
   </div>
 </div>
