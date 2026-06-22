@@ -44,3 +44,16 @@ CREATE TABLE IF NOT EXISTS `PREFIX_fexa_ai_structured_data`
     KEY `idx_lookup` (`entity_type`, `entity_id`, `is_active`)
 ) ENGINE = ENGINE_TYPE
   DEFAULT CHARSET = utf8;
+
+CREATE TABLE IF NOT EXISTS `PREFIX_fexa_ai_llms_txt`
+(
+    `id`               INT(10) UNSIGNED AUTO_INCREMENT,
+    `id_shop`          INT(10) UNSIGNED NOT NULL DEFAULT 0,
+    `id_lang`          INT(10) UNSIGNED NOT NULL DEFAULT 0,
+    `content`          LONGTEXT         NOT NULL,
+    `is_active`        TINYINT(1)       NOT NULL DEFAULT 1,
+    `updated_at`       DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uq_shop_lang` (`id_shop`, `id_lang`)
+) ENGINE = ENGINE_TYPE
+  DEFAULT CHARSET = utf8;

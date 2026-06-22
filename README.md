@@ -4,7 +4,7 @@
 
 Connect your store in one click and let AI automatically improve your SEO, structured data and **voice search readiness (AEO — Answer Engine Optimization)**.
 
-> Keywords: PrestaShop SEO module, AI SEO, voice search optimization, AEO, structured data, JSON-LD, FAQ schema, Product schema, rich snippets, Google Assistant, Alexa, Siri, ChatGPT, Google SGE.
+> Keywords: PrestaShop SEO module, AI SEO, voice search optimization, AEO, GEO, llms.txt, Agentic Browsing, GA4 AI Assistant channel, structured data, JSON-LD, FAQ schema, Product schema, rich snippets, Google Assistant, Alexa, Siri, ChatGPT, Perplexity, Gemini, Claude, Google SGE.
 
 ## ✨ Features
 
@@ -12,6 +12,11 @@ Connect your store in one click and let AI automatically improve your SEO, struc
 - **Speakable schema** so assistants (Google Assistant, Alexa, Siri) can read your content aloud.
 - **FAQ structured data** that powers spoken answers and Google's "People also ask".
 - Content shaped for **AI answer engines** (ChatGPT, Google SGE / AI Overviews).
+
+### 🤖 AI Readability — automatic `/llms.txt` (new in v3.6.0)
+- Generates and serves a factual **`/llms.txt`** at your domain root — the machine-readable identity card that AI engines (**ChatGPT, Perplexity, Gemini, Claude**) read to represent and **quote your store correctly**.
+- Built from your **real catalogue + brand identity** (no invented data): it maps your categories, key pages and sitemap, and refreshes after every scan.
+- Directly answers Google's new **Lighthouse "Agentic Browsing"** score and the **GA4 "AI Assistant" traffic channel** — the new front line of AI visibility.
 
 ### 📊 Automatic Structured Data (JSON-LD)
 - **Product**, **FAQPage** and **BreadcrumbList** schema injected automatically into your `<head>`.

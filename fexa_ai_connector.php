@@ -41,7 +41,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.5.1';
+        $this->version = '3.6.0';
 
         parent::__construct();
 
@@ -402,6 +402,16 @@ HTML;
             'fexa_ai_connector-mcp-server' => [
                 'controller' => 'McpServer',
                 'rule' => 'mcp',
+                'keywords' => [],
+                'params' => [
+                    'fc' => 'module',
+                    'module' => $this->name,
+                ],
+            ],
+            // Serve the shop's machine-readable AEO map at the domain root.
+            'fexa_ai_connector-llms-txt' => [
+                'controller' => 'llms',
+                'rule' => 'llms.txt',
                 'keywords' => [],
                 'params' => [
                     'fc' => 'module',
