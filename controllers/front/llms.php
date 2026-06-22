@@ -7,9 +7,10 @@
  *
  * This module is proprietary software owned by Fexa AI.
  *
- * Serves the shop's /llms.txt at the domain root from the fexa_ai_llms_txt table.
- * READ-ONLY: it only SELECTs the stored content and echoes it — it never writes
- * anything and never affects any other page. No content stored → 404.
+ * Serves the shop's /llms.txt at the domain root from the FEXA_AI_LLMS_TXT
+ * Configuration value (stored by the set_llms_txt MCP tool). READ-ONLY: it only
+ * reads Configuration and echoes it — it never writes anything and never affects
+ * any other page. No content stored → 404.
  */
 
 if (!defined('_PS_VERSION_')) {
@@ -23,25 +24,21 @@ class Fexa_ai_connectorLlmsModuleFrontController extends ModuleFrontController
 
     public function initContent(): void
     {
-        $idShop = (int) $this->context->shop->id;
-
-        // Prefer a shop-specific row, fall back to the all-shops (0) row.
-        $row = Db::getInstance()->getRow(
-            'SELECT content FROM `' . _DB_PREFIX_ . 'fexa_ai_llms_txt` '
-            . 'WHERE is_active = 1 AND (id_shop = ' . $idShop . ' OR id_shop = 0) '
-            . 'ORDER BY id_shop DESC LIMIT 1'
-        );
+        // Configuration::get resolves the current shop's value, falling back to global.
+        // It reads a core table present on every node (including the read replica), so a
+        // value written via the MCP tool is reliably visible here.
+        $content = Configuration::get('FEXA_AI_LLMS_TXT');
 
         header('Content-Type: text/plain; charset=utf-8');
         header('X-Robots-Tag: noindex');
 
-        if (!is_array($row) || empty($row['content'])) {
+        if ($content === false || $content === null || $content === '') {
             header('HTTP/1.1 404 Not Found');
             exit;
         }
 
         header('Cache-Control: public, max-age=86400');
-        echo $row['content'];
+        echo $content;
         exit;
     }
 }
