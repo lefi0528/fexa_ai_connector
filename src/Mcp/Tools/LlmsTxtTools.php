@@ -42,7 +42,7 @@ class LlmsTxtTools
     {
         $id_shop = (int) $id_shop;
         $id_lang = (int) $id_lang;
-        $content = trim($content);
+        $content = trim($this->maybeDecodeBase64($content));
 
         if ($content === '') {
             throw new \Exception('content is empty');
@@ -56,14 +56,27 @@ class LlmsTxtTools
             throw new \Exception('content must contain a markdown H1 (a line starting with "# ")');
         }
 
+        // Self-heal: create the table if a prior install/upgrade missed it. Without this,
+        // a missing table made the INSERT fail silently while we still returned success —
+        // the row was never stored and /llms.txt kept 404-ing.
+        $this->ensureTable();
+
         $db = Db::getInstance();
         $c = pSQL($content, true);
         $where = 'id_shop = ' . $id_shop . ' AND id_lang = ' . $id_lang;
         $db->delete(self::TABLE, $where);
-        $db->execute(
+        $ok = $db->execute(
             'INSERT INTO `' . _DB_PREFIX_ . self::TABLE . '` (id_shop, id_lang, content, is_active) VALUES '
             . '(' . $id_shop . ', ' . $id_lang . ", '" . $c . "', 1)"
         );
+
+        // Verify the write actually persisted — never report a false success.
+        $stored = (int) $db->getValue(
+            'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . self::TABLE . '` WHERE ' . $where
+        );
+        if (!$ok || $stored < 1) {
+            throw new \Exception('llms.txt write did not persist (database error or insufficient privileges)');
+        }
 
         return [
             'status' => 'success',
@@ -71,6 +84,42 @@ class LlmsTxtTools
             'id_lang' => $id_lang,
             'bytes' => strlen($content),
         ];
+    }
+
+    /** Decode a WAF-safe base64 transport. Real llms.txt markdown always contains spaces,
+     *  '#' and newlines (none of which are in the base64 alphabet), so a payload that is a
+     *  single pure base64 token is the SaaS sending the content encoded to dodge web-app
+     *  firewalls (e.g. Atomicorp rule 360151 flags the markdown link syntax "[x](y)" as a
+     *  PHP-injection attempt). Plain markdown is returned untouched. */
+    private function maybeDecodeBase64(string $content): string
+    {
+        $t = trim($content);
+        if ($t !== '' && preg_match('/^[A-Za-z0-9+\/]+={0,2}$/', $t)) {
+            $decoded = base64_decode($t, true);
+            if ($decoded !== false && $decoded !== '') {
+                return $decoded;
+            }
+        }
+
+        return $content;
+    }
+
+    /** Create the storage table if missing — mirrors sql/install.sql so a push always has
+     *  somewhere to write, even when the module was upgraded over a build that predates it. */
+    private function ensureTable(): void
+    {
+        Db::getInstance()->execute(
+            'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . self::TABLE . '` ('
+            . '`id` INT(10) UNSIGNED AUTO_INCREMENT,'
+            . '`id_shop` INT(10) UNSIGNED NOT NULL DEFAULT 0,'
+            . '`id_lang` INT(10) UNSIGNED NOT NULL DEFAULT 0,'
+            . '`content` LONGTEXT NOT NULL,'
+            . '`is_active` TINYINT(1) NOT NULL DEFAULT 1,'
+            . '`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,'
+            . 'PRIMARY KEY (`id`),'
+            . 'UNIQUE KEY `uq_shop_lang` (`id_shop`, `id_lang`)'
+            . ') ENGINE = ' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET = utf8'
+        );
     }
 
     #[McpTool(
@@ -88,6 +137,7 @@ class LlmsTxtTools
     {
         $id_shop = (int) $id_shop;
         $id_lang = (int) $id_lang;
+        $this->ensureTable();
 
         $row = Db::getInstance()->getRow(
             'SELECT content, is_active, updated_at FROM `' . _DB_PREFIX_ . self::TABLE . '` '
