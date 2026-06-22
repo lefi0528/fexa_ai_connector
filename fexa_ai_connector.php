@@ -41,7 +41,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.6.1';
+        $this->version = '3.6.2';
 
         parent::__construct();
 

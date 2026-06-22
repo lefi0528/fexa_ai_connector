@@ -56,11 +56,12 @@ class LlmsTxtTools
             throw new \Exception('content must contain a markdown H1 (a line starting with "# ")');
         }
 
-        // Self-heal: create the table if a prior install/upgrade missed it. Without this,
-        // a missing table made the INSERT fail silently while we still returned success —
-        // the row was never stored and /llms.txt kept 404-ing.
-        $this->ensureTable();
-
+        // The table is created at install (sql/install.sql), exactly like fexa_ai_structured_data.
+        // We deliberately do NOT create it at runtime here: on managed hosting with read/write
+        // splitting, a table created mid-request in the front/MCP context lands on the primary
+        // but the read replica never sees it, so the INSERT "succeeds" yet every later read
+        // (get_llms_txt, the /llms.txt controller) returns empty. Mirroring the structured-data
+        // tool — which only ever writes to its install-created table — makes writes persist.
         $db = Db::getInstance();
         $c = pSQL($content, true);
         $where = 'id_shop = ' . $id_shop . ' AND id_lang = ' . $id_lang;
@@ -104,24 +105,6 @@ class LlmsTxtTools
         return $content;
     }
 
-    /** Create the storage table if missing — mirrors sql/install.sql so a push always has
-     *  somewhere to write, even when the module was upgraded over a build that predates it. */
-    private function ensureTable(): void
-    {
-        Db::getInstance()->execute(
-            'CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . self::TABLE . '` ('
-            . '`id` INT(10) UNSIGNED AUTO_INCREMENT,'
-            . '`id_shop` INT(10) UNSIGNED NOT NULL DEFAULT 0,'
-            . '`id_lang` INT(10) UNSIGNED NOT NULL DEFAULT 0,'
-            . '`content` LONGTEXT NOT NULL,'
-            . '`is_active` TINYINT(1) NOT NULL DEFAULT 1,'
-            . '`updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,'
-            . 'PRIMARY KEY (`id`),'
-            . 'UNIQUE KEY `uq_shop_lang` (`id_shop`, `id_lang`)'
-            . ') ENGINE = ' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET = utf8'
-        );
-    }
-
     #[McpTool(
         name: 'get_llms_txt',
         description: 'Read the stored /llms.txt for a shop (diff / delivery verification).'
@@ -137,7 +120,6 @@ class LlmsTxtTools
     {
         $id_shop = (int) $id_shop;
         $id_lang = (int) $id_lang;
-        $this->ensureTable();
 
         $row = Db::getInstance()->getRow(
             'SELECT content, is_active, updated_at FROM `' . _DB_PREFIX_ . self::TABLE . '` '
