@@ -61,8 +61,10 @@ class LlmsTxtTools
         }
 
         $idShop = ((int) $id_shop) ?: null; // null = global (all shops)
-        // $html = true so the markdown (#, [], (), …) is stored verbatim, not stripped.
-        Configuration::updateValue(self::KEY, $content, true, null, $idShop);
+        // Store base64-encoded. PrestaShop's Configuration sanitises HTML-ish characters
+        // ('>' → '&gt;', '&' → '&amp;'), which would corrupt the markdown we serve verbatim
+        // at /llms.txt. base64 is opaque to that sanitisation — we decode it on read.
+        Configuration::updateValue(self::KEY, base64_encode($content), false, null, $idShop);
 
         return [
             'status' => 'success',
@@ -85,11 +87,10 @@ class LlmsTxtTools
     public function getLlmsTxt(?int $id_shop = 0, ?int $id_lang = 0): array
     {
         $idShop = ((int) $id_shop) ?: null;
-        $content = Configuration::get(self::KEY, null, null, $idShop);
 
         return [
             'id_shop' => (int) $id_shop,
-            'content' => ($content !== false && $content !== null && $content !== '') ? (string) $content : null,
+            'content' => self::readStored($idShop),
         ];
     }
 
@@ -129,5 +130,20 @@ class LlmsTxtTools
         }
 
         return $content;
+    }
+
+    /** Read the stored /llms.txt: base64-decode the Configuration value (how setLlmsTxt
+     *  stores it). Tolerates a legacy raw (non-base64) value by returning it as-is, so an
+     *  upgrade keeps serving the old content until the next push overwrites it. Shared with
+     *  the front controller so both decode identically. */
+    public static function readStored(?int $idShop): ?string
+    {
+        $raw = Configuration::get(self::KEY, null, null, $idShop);
+        if ($raw === false || $raw === null || $raw === '') {
+            return null;
+        }
+        $decoded = base64_decode((string) $raw, true);
+
+        return ($decoded !== false && $decoded !== '') ? $decoded : (string) $raw;
     }
 }
