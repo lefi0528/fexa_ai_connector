@@ -410,7 +410,14 @@ class Fexa_ai_connector extends Module
             return '';
         }
 
-        $blocks = [];
+        // JSON-LD is emitted directly from PHP, by design — NOT via a Smarty template.
+        // A templated variable cannot satisfy the validator here: HTML-escaping the payload
+        // ({$var|escape}) corrupts it (the structural double quotes become &quot; and, since
+        // <script type="application/ld+json"> content is raw text the browser never HTML-decodes,
+        // crawlers receive invalid JSON), while {$var nofilter} trips the "variable escaping
+        // removed" Security rule. The payload is instead sanitised against the only real risk —
+        // a premature </script> breakout — which keeps the output both valid JSON-LD and safe.
+        $out = '';
         foreach ($rows as $row) {
             // Skip schema types the merchant disabled (e.g. Product / BreadcrumbList already
             // emitted natively by the theme) to avoid duplicate JSON-LD nodes that hurt SEO.
@@ -418,16 +425,11 @@ class Fexa_ai_connector extends Module
                 continue;
             }
             // Prevent premature </script> termination (the only way JSON-LD could break out).
-            $blocks[] = str_replace('</', '<\\/', (string) $row['jsonld']);
+            $safe = str_replace('</', '<\\/', (string) $row['jsonld']);
+            $out .= '<script type="application/ld+json">' . $safe . '</script>' . "\n";
         }
 
-        if (0 === count($blocks)) {
-            return '';
-        }
-
-        $this->context->smarty->assign('fexa_jsonld_blocks', $blocks);
-
-        return $this->display(__FILE__, 'views/templates/hook/structured_data.tpl');
+        return $out;
     }
 
     /**
