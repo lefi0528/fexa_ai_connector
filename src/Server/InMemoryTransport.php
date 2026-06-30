@@ -11,12 +11,10 @@
 namespace PrestaShop\Module\FexaAiConnector\Server;
 
 use Evenement\EventEmitterTrait;
-use PhpMcp\Schema\Constants;
 use PhpMcp\Schema\JsonRpc\Error;
 use PhpMcp\Schema\JsonRpc\Message;
 use PhpMcp\Schema\JsonRpc\Parser;
 use PhpMcp\Schema\JsonRpc\Request;
-use PhpMcp\Schema\JsonRpc\Response;
 use PhpMcp\Server\Contracts\LoggerAwareInterface;
 use PhpMcp\Server\Contracts\ServerTransportInterface;
 use PrestaShop\Module\FexaAiConnector\Exceptions\ContextException;
@@ -260,45 +258,6 @@ class InMemoryTransport implements ServerTransportInterface, LoggerAwareInterfac
 
         flush();
     }
-
-    private function sendNotification(string $method, array $params = []): void
-    {
-        $notification = [
-            'jsonrpc' => '2.0',
-            'method' => $method,
-        ];
-
-        if (!empty($params)) {
-            $notification['params'] = $params;
-        }
-
-        $this->sendJsonMessage($notification);
-    }
-
-    private function sendToolError(string $errorMessage): void
-    {
-        $resultData = [
-            'content' => [
-                [
-                    'type' => 'text',
-                    'text' => $errorMessage,
-                ],
-            ],
-            'isError' => true,
-        ];
-
-        $message = new Response(
-            Constants::JSONRPC_VERSION,
-            0,
-            $resultData
-        );
-
-        http_response_code(200);
-
-        $this->sendJsonMessage($message);
-        $this->close();
-    }
-
     private function sendInvalidRequestError(int $code, string $message): void
     {
         $error = Error::forInvalidRequest($message);

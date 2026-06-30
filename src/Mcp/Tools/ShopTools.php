@@ -7,6 +7,10 @@ use PhpMcp\Server\Attributes\Schema;
 use Context;
 use Language;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class ShopTools
 {
     #[McpTool(

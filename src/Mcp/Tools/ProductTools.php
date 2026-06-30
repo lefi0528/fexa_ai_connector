@@ -9,6 +9,10 @@ use Context;
 use Validate;
 use PrestaShop\Module\FexaAiConnector\Helper\HtmlSanitizer;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class ProductTools
 {
     #[McpTool(
@@ -54,7 +58,7 @@ class ProductTools
 
         return array_map(function($p) use ($langId, $context) {
             $images = \Image::getImages($langId, (int)$p['id_product']);
-            $nbImages = is_array($images) ? count($images) : 0;
+            $nbImages = count($images);
             $missingAlt = 0;
             if ($nbImages > 0) {
                 foreach ($images as $img) {
@@ -230,8 +234,8 @@ class ProductTools
         // sizes, clothing, …) rather than the base product. Fall back to it so variant
         // catalogues aren't reported as "missing barcode" while the storefront shows the
         // combination's gtin in its Product schema.
-        $resolvedEan13 = isset($product->ean13) ? (string) $product->ean13 : '';
-        $resolvedUpc = isset($product->upc) ? (string) $product->upc : '';
+        $resolvedEan13 = (string) $product->ean13;
+        $resolvedUpc = (string) $product->upc;
         if ($resolvedEan13 === '' || $resolvedUpc === '') {
             $defaultCombo = (int) Product::getDefaultAttribute((int) $product->id);
             if ($defaultCombo > 0) {
@@ -271,10 +275,10 @@ class ProductTools
             'currency' => $currencyIso,
             'on_sale' => (bool)$product->on_sale,
             'ean13' => $resolvedEan13,
-            'isbn' => isset($product->isbn) ? (string) $product->isbn : '',
+            'isbn' => (string) $product->isbn,
             'upc' => $resolvedUpc,
-            'mpn' => isset($product->mpn) ? (string) $product->mpn : '',
-            'condition' => isset($product->condition) ? (string) $product->condition : '',
+            'mpn' => (string) $product->mpn,
+            'condition' => (string) $product->condition,
             'quantity' => $quantity,
             'availability' => $availability,
             'available_for_order' => $availableForOrder,

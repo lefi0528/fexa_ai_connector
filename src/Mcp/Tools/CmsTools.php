@@ -9,6 +9,10 @@ use Validate;
 use CMS;
 use PrestaShop\Module\FexaAiConnector\Helper\HtmlSanitizer;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class CmsTools
 {
     #[McpTool(

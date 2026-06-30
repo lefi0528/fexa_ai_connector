@@ -15,6 +15,10 @@ use PhpMcp\Server\Attributes\Schema;
 use Db;
 use Validate;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 /**
  * Structured data (JSON-LD) storage tools.
  *

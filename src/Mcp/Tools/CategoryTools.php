@@ -9,6 +9,10 @@ use Validate;
 use PrestaShop\Module\FexaAiConnector\Helper\HtmlSanitizer;
 use Category;
 
+if (!defined('_PS_VERSION_')) {
+    exit;
+}
+
 class CategoryTools
 {
     #[McpTool(
