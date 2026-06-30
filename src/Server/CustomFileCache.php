@@ -13,11 +13,7 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Server;
 
-use DateInterval;
-use DateTimeImmutable;
-use InvalidArgumentException;
 use Psr\SimpleCache\CacheInterface;
-use Throwable;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -275,7 +271,7 @@ class CustomFileCache implements CacheInterface
             @chmod($this->cacheFile, $this->filePermission);
 
             return true;
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             flock($handle, LOCK_UN);
 
             return false;
@@ -290,7 +286,7 @@ class CustomFileCache implements CacheInterface
     {
         if (!is_dir($directory)) {
             if (!@mkdir($directory, $this->dirPermission, true)) {
-                throw new InvalidArgumentException("Cache directory does not exist and could not be created: {$directory}");
+                throw new \InvalidArgumentException("Cache directory does not exist and could not be created: {$directory}");
             }
             @chmod($directory, $this->dirPermission);
         }
@@ -305,14 +301,14 @@ class CustomFileCache implements CacheInterface
         if (is_int($ttl)) {
             return $ttl <= 0 ? $now - 1 : $now + $ttl;
         }
-        if ($ttl instanceof DateInterval) {
+        if ($ttl instanceof \DateInterval) {
             try {
-                return (new DateTimeImmutable())->add($ttl)->getTimestamp();
-            } catch (Throwable $e) {
+                return (new \DateTimeImmutable())->add($ttl)->getTimestamp();
+            } catch (\Throwable $e) {
                 return null;
             }
         }
-        throw new InvalidArgumentException('Invalid TTL type provided. Must be null, int, or DateInterval.');
+        throw new \InvalidArgumentException('Invalid TTL type provided. Must be null, int, or DateInterval.');
     }
 
     private function isExpired($expiry)
@@ -323,7 +319,7 @@ class CustomFileCache implements CacheInterface
     private function sanitizeKey($key)
     {
         if ('' === $key) {
-            throw new InvalidArgumentException('Cache key cannot be empty.');
+            throw new \InvalidArgumentException('Cache key cannot be empty.');
         }
 
         return $key;
@@ -333,7 +329,7 @@ class CustomFileCache implements CacheInterface
     {
         foreach ($keys as $key) {
             if (!is_string($key)) {
-                throw new InvalidArgumentException('Cache key must be a string, got '.gettype($key));
+                throw new \InvalidArgumentException('Cache key must be a string, got ' . gettype($key));
             }
             $this->sanitizeKey($key);
         }

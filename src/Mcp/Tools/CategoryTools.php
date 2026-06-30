@@ -14,14 +14,9 @@
 namespace PrestaShop\Module\FexaAiConnector\Mcp\Tools;
 
 use Category;
-use Configuration;
-use Context;
-use Db;
-use Exception;
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
 use PrestaShop\Module\FexaAiConnector\Helper\HtmlSanitizer;
-use Validate;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -43,36 +38,36 @@ class CategoryTools
     )]
     public function listCategories(?int $langId = null, int $limit = 200, int $offset = 0): array
     {
-        $context = Context::getContext();
+        $context = \Context::getContext();
 
         if (!$context) {
-            throw new Exception('PrestaShop Context not initialized.');
+            throw new \Exception('PrestaShop Context not initialized.');
         }
 
         if (!$langId) {
             if (isset($context->language) && isset($context->language->id)) {
                 $langId = (int) $context->language->id;
             } else {
-                $langId = (int) Configuration::get('PS_LANG_DEFAULT');
+                $langId = (int) \Configuration::get('PS_LANG_DEFAULT');
             }
         }
 
         if (empty($langId)) {
-            throw new Exception('Could not determine Language ID.');
+            throw new \Exception('Could not determine Language ID.');
         }
 
         // Use a flat SQL query to get ALL categories at all depths (excluding root and home)
         $sql = 'SELECT c.id_category, cl.name, cl.link_rewrite, c.active, c.level_depth,
-                    (SELECT COUNT(*) FROM '._DB_PREFIX_.'category_product cp WHERE cp.id_category = c.id_category) as product_count
-                FROM '._DB_PREFIX_.'category c
-                INNER JOIN '._DB_PREFIX_.'category_lang cl
-                    ON c.id_category = cl.id_category AND cl.id_lang = '.(int) $langId.'
+                    (SELECT COUNT(*) FROM ' . _DB_PREFIX_ . 'category_product cp WHERE cp.id_category = c.id_category) as product_count
+                FROM ' . _DB_PREFIX_ . 'category c
+                INNER JOIN ' . _DB_PREFIX_ . 'category_lang cl
+                    ON c.id_category = cl.id_category AND cl.id_lang = ' . (int) $langId . '
                 WHERE c.active = 1
                     AND c.level_depth > 1
                 ORDER BY c.level_depth ASC, cl.name ASC
-                LIMIT '.(int) $limit.' OFFSET '.(int) $offset;
+                LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
 
-        $rows = Db::getInstance()->executeS($sql);
+        $rows = \Db::getInstance()->executeS($sql);
 
         if (!is_array($rows)) {
             return [];
@@ -81,7 +76,7 @@ class CategoryTools
         return array_map(function ($c) use ($langId, $context) {
             return [
                 'id' => (int) $c['id_category'],
-                'name' => !empty($c['name']) ? $c['name'] : 'Category #'.$c['id_category'],
+                'name' => !empty($c['name']) ? $c['name'] : 'Category #' . $c['id_category'],
                 'link_rewrite' => $c['link_rewrite'] ?? '',
                 'active' => (bool) $c['active'],
                 'level_depth' => (int) $c['level_depth'],
@@ -104,13 +99,13 @@ class CategoryTools
     )]
     public function getCategoryDetails(int $id_category, ?int $id_lang = null): array
     {
-        $context = Context::getContext();
+        $context = \Context::getContext();
         $idLang = $id_lang ?? $context->language->id;
 
-        $category = new Category($id_category, $idLang);
+        $category = new \Category($id_category, $idLang);
 
-        if (!Validate::isLoadedObject($category)) {
-            throw new Exception("Category with ID $id_category not found.");
+        if (!\Validate::isLoadedObject($category)) {
+            throw new \Exception("Category with ID $id_category not found.");
         }
 
         return [
@@ -125,7 +120,7 @@ class CategoryTools
             'level_depth' => $category->level_depth,
             'id_parent' => $category->id_parent,
             'nb_products' => (int) $category->getProducts($idLang, 1, 1, null, null, true),
-            'has_image' => file_exists(_PS_CAT_IMG_DIR_.(int) $category->id.'.jpg'),
+            'has_image' => file_exists(_PS_CAT_IMG_DIR_ . (int) $category->id . '.jpg'),
             'breadcrumb' => $this->buildBreadcrumbTrail((int) $category->id, (int) $idLang, $context),
         ];
     }
@@ -138,8 +133,8 @@ class CategoryTools
     {
         $trail = [];
         try {
-            $cat = new Category($idCategory, $idLang);
-            if (!Validate::isLoadedObject($cat)) {
+            $cat = new \Category($idCategory, $idLang);
+            if (!\Validate::isLoadedObject($cat)) {
                 return $trail;
             }
             $parents = $cat->getParentsCategories($idLang); // current → … → root
@@ -160,7 +155,7 @@ class CategoryTools
                     'url' => $context->link->getCategoryLink($idc, isset($p['link_rewrite']) ? $p['link_rewrite'] : null, $idLang),
                 ];
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // best-effort
         }
 
@@ -192,19 +187,19 @@ class CategoryTools
         bool $update_slug = true,
         ?string $description = null,
         ?string $meta_title = null,
-        ?string $meta_description = null
+        ?string $meta_description = null,
     ): array {
-        $context = Context::getContext();
+        $context = \Context::getContext();
         $id_lang = $id_lang ?? (int) $context->language->id;
 
         if (!$id_lang) {
-            $id_lang = (int) Configuration::get('PS_LANG_DEFAULT');
+            $id_lang = (int) \Configuration::get('PS_LANG_DEFAULT');
         }
 
-        $category = new Category($id_category);
+        $category = new \Category($id_category);
 
-        if (!Validate::isLoadedObject($category)) {
-            throw new Exception("Category with ID $id_category not found.");
+        if (!\Validate::isLoadedObject($category)) {
+            throw new \Exception("Category with ID $id_category not found.");
         }
 
         $fieldsUpdated = [];
@@ -255,7 +250,7 @@ class CategoryTools
         }
 
         if (!$category->save()) {
-            throw new Exception("Failed to save category ID $id_category");
+            throw new \Exception("Failed to save category ID $id_category");
         }
 
         return [

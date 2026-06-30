@@ -13,9 +13,6 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Repository;
 
-use Db;
-use DbQuery;
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -29,17 +26,17 @@ class McpToolsRepository
 
     public function __construct()
     {
-        $this->db = Db::getInstance();
+        $this->db = \Db::getInstance();
     }
 
     public function deleteToolByNameAndModuleId(string $toolName, int $moduleId): bool
     {
-        return $this->db->delete(self::TABLE_NAME, 'name = "'.pSQL($toolName).'" AND module_id = '.(int) $moduleId);
+        return $this->db->delete(self::TABLE_NAME, 'name = "' . pSQL($toolName) . '" AND module_id = ' . (int) $moduleId);
     }
 
     public function deleteAllToolsByModuleId(int $moduleId): bool
     {
-        return $this->db->delete(self::TABLE_NAME, 'module_id = '.(int) $moduleId);
+        return $this->db->delete(self::TABLE_NAME, 'module_id = ' . (int) $moduleId);
     }
 
     public function upsertTool(int $moduleId, string $name, string $description, bool $isActive = true): bool
@@ -58,11 +55,10 @@ class McpToolsRepository
         if (is_array($existingTool)) {
             unset($data['created_at']);
 
-            return $this->db->update(self::TABLE_NAME, $data, 'id = '.(int) $existingTool['id']);
+            return $this->db->update(self::TABLE_NAME, $data, 'id = ' . (int) $existingTool['id']);
         }
 
         return $this->db->insert(self::TABLE_NAME, $data);
-
     }
 
     public function updateToolStatus(int $moduleId, string $toolName, bool $isActive): bool
@@ -75,17 +71,17 @@ class McpToolsRepository
         return $this->db->update(
             self::TABLE_NAME,
             $data,
-            'module_id = '.(int) $moduleId.' AND name = \''.pSQL($toolName).'\''
+            'module_id = ' . (int) $moduleId . ' AND name = \'' . pSQL($toolName) . '\''
         );
     }
 
     public function getToolByNameAndModuleId(string $name, int $moduleId): array|false
     {
-        $query = new DbQuery();
+        $query = new \DbQuery();
         $query->select('*')
             ->from(self::TABLE_NAME, 'mcp_st')
-            ->where('mcp_st.module_id = '.(int) $moduleId)
-            ->where('mcp_st.name = "'.pSQL($name).'"');
+            ->where('mcp_st.module_id = ' . (int) $moduleId)
+            ->where('mcp_st.name = "' . pSQL($name) . '"');
 
         $result = $this->db->getRow($query);
 
@@ -94,7 +90,7 @@ class McpToolsRepository
 
     public function getAllTools(): array
     {
-        $query = new DbQuery();
+        $query = new \DbQuery();
         $query->select('*')
             ->from(self::TABLE_NAME);
 

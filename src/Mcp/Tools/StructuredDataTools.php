@@ -13,15 +13,10 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Mcp\Tools;
 
-use Category;
-use CMS;
-use Db;
-use Exception;
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
 use Product;
 use Tools;
-use Validate;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -63,51 +58,51 @@ class StructuredDataTools
         string $schema_type,
         string $jsonld,
         ?int $id_lang = 0,
-        ?int $id_shop = 0
+        ?int $id_shop = 0,
     ): array {
         $id_lang = (int) $id_lang;
         $id_shop = (int) $id_shop;
 
         if (!in_array($entity_type, self::ALLOWED_ENTITIES, true)) {
-            throw new Exception("Invalid entity_type '$entity_type'");
+            throw new \Exception("Invalid entity_type '$entity_type'");
         }
         if (!in_array($schema_type, self::ALLOWED_SCHEMAS, true)) {
-            throw new Exception("Invalid schema_type '$schema_type'");
+            throw new \Exception("Invalid schema_type '$schema_type'");
         }
         if (!$this->entityExists($entity_type, $entity_id)) {
-            throw new Exception("$entity_type #$entity_id not found");
+            throw new \Exception("$entity_type #$entity_id not found");
         }
         if (strlen($jsonld) > self::MAX_BYTES) {
-            throw new Exception('jsonld payload too large');
+            throw new \Exception('jsonld payload too large');
         }
 
         $decoded = json_decode($jsonld, true);
         if (!is_array($decoded)) {
-            throw new Exception('jsonld is not valid JSON');
+            throw new \Exception('jsonld is not valid JSON');
         }
         $context = $decoded['@context'] ?? '';
         if (false === strpos((string) $context, 'schema.org')) {
-            throw new Exception('jsonld must declare an @context of schema.org');
+            throw new \Exception('jsonld must declare an @context of schema.org');
         }
         if (empty($decoded['@type'])) {
-            throw new Exception('jsonld must declare an @type');
+            throw new \Exception('jsonld must declare an @type');
         }
 
-        $db = Db::getInstance();
+        $db = \Db::getInstance();
         $et = pSQL($entity_type);
         $st = pSQL($schema_type);
         $jl = pSQL($jsonld, true);
 
-        $where = "entity_type='".$et."' AND entity_id=".$entity_id
-            .' AND id_lang='.$id_lang.' AND id_shop='.$id_shop
-            ." AND schema_type='".$st."'";
+        $where = "entity_type='" . $et . "' AND entity_id=" . $entity_id
+            . ' AND id_lang=' . $id_lang . ' AND id_shop=' . $id_shop
+            . " AND schema_type='" . $st . "'";
         $db->delete(self::TABLE, $where);
 
         $db->execute(
-            'INSERT INTO `'._DB_PREFIX_.self::TABLE.'` '
-            .'(entity_type, entity_id, id_lang, id_shop, schema_type, jsonld, is_active) VALUES '
-            ."('".$et."', ".$entity_id.', '.$id_lang.', '.$id_shop
-            .", '".$st."', '".$jl."', 1)"
+            'INSERT INTO `' . _DB_PREFIX_ . self::TABLE . '` '
+            . '(entity_type, entity_id, id_lang, id_shop, schema_type, jsonld, is_active) VALUES '
+            . "('" . $et . "', " . $entity_id . ', ' . $id_lang . ', ' . $id_shop
+            . ", '" . $st . "', '" . $jl . "', 1)"
         );
 
         $this->clearEntityCache();
@@ -137,18 +132,18 @@ class StructuredDataTools
     public function getStructuredData(string $entity_type, int $entity_id, ?int $id_lang = 0): array
     {
         if (!in_array($entity_type, self::ALLOWED_ENTITIES, true)) {
-            throw new Exception("Invalid entity_type '$entity_type'");
+            throw new \Exception("Invalid entity_type '$entity_type'");
         }
         $id_lang = (int) $id_lang;
 
         $sql = 'SELECT schema_type, jsonld, id_lang, id_shop, is_active FROM `'
-            ._DB_PREFIX_.self::TABLE."` WHERE entity_type='".pSQL($entity_type)
-            ."' AND entity_id=".$entity_id;
+            . _DB_PREFIX_ . self::TABLE . "` WHERE entity_type='" . pSQL($entity_type)
+            . "' AND entity_id=" . $entity_id;
         if ($id_lang) {
-            $sql .= ' AND (id_lang='.$id_lang.' OR id_lang=0)';
+            $sql .= ' AND (id_lang=' . $id_lang . ' OR id_lang=0)';
         }
 
-        $rows = Db::getInstance()->executeS($sql);
+        $rows = \Db::getInstance()->executeS($sql);
 
         return [
             'entity_type' => $entity_type,
@@ -172,7 +167,7 @@ class StructuredDataTools
     public function getStructuredDataBulk(string $entity_type, array $entity_ids, ?int $id_lang = 0): array
     {
         if (!in_array($entity_type, self::ALLOWED_ENTITIES, true)) {
-            throw new Exception("Invalid entity_type '$entity_type'");
+            throw new \Exception("Invalid entity_type '$entity_type'");
         }
         $id_lang = (int) $id_lang;
 
@@ -186,13 +181,13 @@ class StructuredDataTools
         }
 
         $sql = 'SELECT entity_id, schema_type, id_lang, id_shop FROM `'
-            ._DB_PREFIX_.self::TABLE."` WHERE entity_type='".pSQL($entity_type)
-            ."' AND is_active=1 AND entity_id IN (".implode(',', $ids).')';
+            . _DB_PREFIX_ . self::TABLE . "` WHERE entity_type='" . pSQL($entity_type)
+            . "' AND is_active=1 AND entity_id IN (" . implode(',', $ids) . ')';
         if ($id_lang) {
-            $sql .= ' AND (id_lang='.$id_lang.' OR id_lang=0)';
+            $sql .= ' AND (id_lang=' . $id_lang . ' OR id_lang=0)';
         }
 
-        $rows = Db::getInstance()->executeS($sql);
+        $rows = \Db::getInstance()->executeS($sql);
 
         return [
             'entity_type' => $entity_type,
@@ -216,16 +211,16 @@ class StructuredDataTools
     public function deleteStructuredData(string $entity_type, int $entity_id, string $schema_type, ?int $id_lang = 0): array
     {
         if (!in_array($entity_type, self::ALLOWED_ENTITIES, true)) {
-            throw new Exception("Invalid entity_type '$entity_type'");
+            throw new \Exception("Invalid entity_type '$entity_type'");
         }
         $id_lang = (int) $id_lang;
 
-        $where = "entity_type='".pSQL($entity_type)."' AND entity_id=".$entity_id
-            ." AND schema_type='".pSQL($schema_type)."'";
+        $where = "entity_type='" . pSQL($entity_type) . "' AND entity_id=" . $entity_id
+            . " AND schema_type='" . pSQL($schema_type) . "'";
         if ($id_lang) {
-            $where .= ' AND id_lang='.$id_lang;
+            $where .= ' AND id_lang=' . $id_lang;
         }
-        Db::getInstance()->delete(self::TABLE, $where);
+        \Db::getInstance()->delete(self::TABLE, $where);
 
         $this->clearEntityCache();
 
@@ -236,19 +231,19 @@ class StructuredDataTools
     {
         switch ($type) {
             case 'product':
-                $obj = new Product($id);
+                $obj = new \Product($id);
                 break;
             case 'category':
-                $obj = new Category($id);
+                $obj = new \Category($id);
                 break;
             case 'cms':
-                $obj = new CMS($id);
+                $obj = new \CMS($id);
                 break;
             default:
                 return false;
         }
 
-        return Validate::isLoadedObject($obj);
+        return \Validate::isLoadedObject($obj);
     }
 
     private function clearEntityCache(): void
@@ -256,10 +251,10 @@ class StructuredDataTools
         // Structured data is rendered in <head>, which may be cached. Flush the
         // template/page caches so the change is reflected on the next page load.
         if (method_exists('Tools', 'clearSmartyCache')) {
-            Tools::clearSmartyCache();
+            \Tools::clearSmartyCache();
         }
         if (method_exists('Tools', 'clearXMLCache')) {
-            Tools::clearXMLCache();
+            \Tools::clearXMLCache();
         }
     }
 }

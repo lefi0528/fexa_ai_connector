@@ -10,7 +10,6 @@
  * @copyright 2025 Fexa AI
  * @license   Proprietary
  */
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -30,8 +29,8 @@ function upgrade_module_3_4_5($module)
     }
     if (defined('_PS_ROOT_DIR_')) {
         $root = rtrim((string) constant('_PS_ROOT_DIR_'), '/\\');
-        $candidates[] = $root.'/var/cache/prod';
-        $candidates[] = $root.'/var/cache/dev';
+        $candidates[] = $root . '/var/cache/prod';
+        $candidates[] = $root . '/var/cache/dev';
     }
 
     $names = [
@@ -44,23 +43,23 @@ function upgrade_module_3_4_5($module)
             continue;
         }
         foreach ($names as $name) {
-            $file = $dir.'/'.$name;
+            $file = $dir . '/' . $name;
             if (is_file($file)) {
                 @unlink($file);
             }
             // Symfony also writes a .php.meta sidecar alongside the dumped container.
-            if (is_file($file.'.meta')) {
-                @unlink($file.'.meta');
+            if (is_file($file . '.meta')) {
+                @unlink($file . '.meta');
             }
         }
     }
 
     // 2) Clear any half-written MCP discovery cache and re-arm discovery.
-    $cacheFile = _PS_MODULE_DIR_.'fexa_ai_connector/.mcp/.cache_v2.json';
+    $cacheFile = _PS_MODULE_DIR_ . 'fexa_ai_connector/.mcp/.cache_v2.json';
     if (is_file($cacheFile)) {
         @unlink($cacheFile);
     }
-    $cacheDir = _PS_MODULE_DIR_.'fexa_ai_connector/.mcp';
+    $cacheDir = _PS_MODULE_DIR_ . 'fexa_ai_connector/.mcp';
     if (!is_dir($cacheDir)) {
         @mkdir($cacheDir, 0755, true);
     }

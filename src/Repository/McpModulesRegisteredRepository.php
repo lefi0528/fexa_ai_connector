@@ -13,9 +13,6 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Repository;
 
-use Db;
-use DbQuery;
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -28,12 +25,12 @@ class McpModulesRegisteredRepository
 
     public function __construct()
     {
-        $this->db = Db::getInstance();
+        $this->db = \Db::getInstance();
     }
 
     public function getAllModules(): array
     {
-        $query = new DbQuery();
+        $query = new \DbQuery();
         $query->select('*')
             ->from(self::TABLE_NAME, 'mcp_smr')
             ->orderBy('mcp_smr.created_at DESC');
@@ -45,11 +42,11 @@ class McpModulesRegisteredRepository
 
     public function addModuleId(int $moduleId): bool
     {
-        $query = new DbQuery();
+        $query = new \DbQuery();
 
         $query->select('*')
             ->from(self::TABLE_NAME, 'mcp_smr')
-            ->where("mcp_smr.module_id = '".(int) $moduleId."'");
+            ->where("mcp_smr.module_id = '" . (int) $moduleId . "'");
 
         $existingModule = (array) $this->db->executeS($query);
 
@@ -67,11 +64,11 @@ class McpModulesRegisteredRepository
 
     public function getModuleById(int $moduleId): array|false
     {
-        $query = new DbQuery();
+        $query = new \DbQuery();
 
         $query->select('*')
             ->from(self::TABLE_NAME, 'mcp_smr')
-            ->where('mcp_smr.module_id = '.(int) $moduleId);
+            ->where('mcp_smr.module_id = ' . (int) $moduleId);
 
         $result = $this->db->getRow($query);
 
@@ -80,6 +77,6 @@ class McpModulesRegisteredRepository
 
     public function deleteModuleById(int $moduleId): bool
     {
-        return $this->db->delete(self::TABLE_NAME, 'module_id = "'.(int) $moduleId.'"');
+        return $this->db->delete(self::TABLE_NAME, 'module_id = "' . (int) $moduleId . '"');
     }
 }

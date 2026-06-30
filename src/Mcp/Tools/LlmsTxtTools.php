@@ -14,7 +14,6 @@
 namespace PrestaShop\Module\FexaAiConnector\Mcp\Tools;
 
 use Configuration;
-use Exception;
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
 
@@ -57,22 +56,22 @@ class LlmsTxtTools
         $content = trim($this->maybeDecodeBase64($content));
 
         if ('' === $content) {
-            throw new Exception('content is empty');
+            throw new \Exception('content is empty');
         }
         if (strlen($content) > self::MAX_BYTES) {
-            throw new Exception('content too large (max '.self::MAX_BYTES.' bytes)');
+            throw new \Exception('content too large (max ' . self::MAX_BYTES . ' bytes)');
         }
         // Must look like an llms.txt: at least one markdown H1. We never serve
         // arbitrary content at the domain root.
         if (!preg_match('/^#\s+/m', $content)) {
-            throw new Exception('content must contain a markdown H1 (a line starting with "# ")');
+            throw new \Exception('content must contain a markdown H1 (a line starting with "# ")');
         }
 
         $idShop = ((int) $id_shop) ?: null; // null = global (all shops)
         // Store base64-encoded. PrestaShop's Configuration sanitises HTML-ish characters
         // ('>' → '&gt;', '&' → '&amp;'), which would corrupt the markdown we serve verbatim
         // at /llms.txt. base64 is opaque to that sanitisation — we decode it on read.
-        Configuration::updateValue(self::KEY, base64_encode($content), false, null, $idShop);
+        \Configuration::updateValue(self::KEY, base64_encode($content), false, null, $idShop);
 
         return [
             'status' => 'success',
@@ -117,7 +116,7 @@ class LlmsTxtTools
     {
         $idShop = ((int) $id_shop) ?: null;
         // Empty value → the front controller returns 404.
-        Configuration::updateValue(self::KEY, '', true, null, $idShop);
+        \Configuration::updateValue(self::KEY, '', true, null, $idShop);
 
         return ['status' => 'deleted', 'id_shop' => (int) $id_shop];
     }
@@ -146,7 +145,7 @@ class LlmsTxtTools
      *  the front controller so both decode identically. */
     public static function readStored(?int $idShop): ?string
     {
-        $raw = Configuration::get(self::KEY, null, null, $idShop);
+        $raw = \Configuration::get(self::KEY, null, null, $idShop);
         if (false === $raw || null === $raw || '' === $raw) {
             return null;
         }

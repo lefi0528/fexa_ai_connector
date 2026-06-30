@@ -10,7 +10,6 @@
  * @copyright 2025 Fexa AI
  * @license   Proprietary
  */
-
 use PrestaShop\Module\FexaAiConnector\Services\McpService;
 
 if (!defined('_PS_VERSION_')) {
@@ -27,7 +26,7 @@ class Fexa_ai_connectorMcpServerModuleFrontController extends ModuleFrontControl
         $allowedOrigins = ['https://fexaai.com', 'https://www.fexaai.com'];
         $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
         if (in_array($origin, $allowedOrigins, true)) {
-            header('Access-Control-Allow-Origin: '.$origin);
+            header('Access-Control-Allow-Origin: ' . $origin);
         }
         header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
         header('Access-Control-Allow-Headers: Content-Type, Authorization, X-MCP-API-KEY, Mcp-Protocol-Version, Mcp-Session-Id, Last-Event-ID');
@@ -82,9 +81,9 @@ class Fexa_ai_connectorMcpServerModuleFrontController extends ModuleFrontControl
                 'error' => [
                     'code' => -32000,
                     'message' => 'Le service MCP du module n\'a pas pu être initialisé. '
-                        .'Videz le cache de PrestaShop (Paramètres avancés → Performances → Vider le cache), '
-                        .'puis réessayez. Si le problème persiste, vérifiez que le dossier var/cache est '
-                        .'inscriptible par le serveur web.',
+                        . 'Videz le cache de PrestaShop (Paramètres avancés → Performances → Vider le cache), '
+                        . 'puis réessayez. Si le problème persiste, vérifiez que le dossier var/cache est '
+                        . 'inscriptible par le serveur web.',
                 ],
                 'id' => null,
             ]);

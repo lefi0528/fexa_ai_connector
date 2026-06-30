@@ -13,11 +13,8 @@
 
 namespace PrestaShop\Module\FexaAiConnector\EventListener;
 
-use Exception;
-use Module;
 use PrestaShop\Module\FexaAiConnector\Services\McpService;
 use PrestaShopBundle\Event\ModuleManagementEvent;
-use PrestaShopException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 if (!defined('_PS_VERSION_')) {
@@ -47,34 +44,34 @@ class ModuleEventListener implements EventSubscriberInterface
     public function storeNewModuleRegistered(ModuleManagementEvent $event): void
     {
         try {
-            $module = Module::getInstanceByName($event->getModule()->get('name'));
+            $module = \Module::getInstanceByName($event->getModule()->get('name'));
 
             if (!$module) {
-                throw new PrestaShopException('Module not found');
+                throw new \PrestaShopException('Module not found');
             }
 
             if (method_exists($module, 'isMcpCompliant') && $module->isMcpCompliant()) {
                 $this->mcpService->storeNewModuleRegistered((int) $module->id);
             }
-        } catch (Exception $e) {
-            throw new PrestaShopException('Error while registering module to MCP: '.$e->getMessage());
+        } catch (\Exception $e) {
+            throw new \PrestaShopException('Error while registering module to MCP: ' . $e->getMessage());
         }
     }
 
     public function removeModuleRegistered(ModuleManagementEvent $event): void
     {
         try {
-            $module = Module::getInstanceByName($event->getModule()->get('name'));
+            $module = \Module::getInstanceByName($event->getModule()->get('name'));
 
             if (!$module) {
-                throw new PrestaShopException('Module not found');
+                throw new \PrestaShopException('Module not found');
             }
 
             if (method_exists($module, 'isMcpCompliant') && $module->isMcpCompliant()) {
                 $this->mcpService->removeModuleRegistered((int) $module->id);
             }
-        } catch (Exception $e) {
-            throw new PrestaShopException('Error while removing module from MCP: '.$e->getMessage());
+        } catch (\Exception $e) {
+            throw new \PrestaShopException('Error while removing module from MCP: ' . $e->getMessage());
         }
     }
 }

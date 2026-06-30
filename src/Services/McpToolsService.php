@@ -13,9 +13,7 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Services;
 
-use Module;
 use PrestaShop\Module\FexaAiConnector\Repository\McpToolsRepository;
-use PrestaShopException;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -54,10 +52,10 @@ class McpToolsService
 
         $toolsGroupedByModule = [];
         foreach ($tools as $tool) {
-            $module = Module::getInstanceById($tool['module_id']);
+            $module = \Module::getInstanceById($tool['module_id']);
 
             if (!$module) {
-                throw new PrestaShopException('Module is not defined');
+                throw new \PrestaShopException('Module is not defined');
             }
 
             $moduleName = $module->displayName;

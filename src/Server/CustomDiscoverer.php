@@ -13,7 +13,6 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Server;
 
-use Module;
 use PhpMcp\Schema\Prompt;
 use PhpMcp\Schema\PromptArgument;
 use PhpMcp\Schema\Resource;
@@ -33,14 +32,7 @@ use PhpMcp\Server\Utils\DocBlockParser;
 use PhpMcp\Server\Utils\SchemaGenerator;
 use PrestaShop\Module\FexaAiConnector\Services\McpToolsService;
 use Psr\Log\LoggerInterface;
-use ReflectionAttribute;
-use ReflectionClass;
-use ReflectionException;
-use ReflectionMethod;
-use ReflectionNamedType;
-use SplFileInfo;
 use Symfony\Component\Finder\Finder;
-use Throwable;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -84,10 +76,10 @@ class CustomDiscoverer extends Discoverer
                 if (str_starts_with($dir, '/') || preg_match('/^[a-zA-Z]:[\\\\\/]/', $dir)) {
                     $path = $dir;
                 } else {
-                    $path = rtrim($basePath, '/').'/'.ltrim($dir, '/');
+                    $path = rtrim($basePath, '/') . '/' . ltrim($dir, '/');
                 }
 
-                $this->logger->info('Module path currently discovered: '.$path);
+                $this->logger->info('Module path currently discovered: ' . $path);
 
                 if (is_dir($path)) {
                     $absolutePaths[] = $path;
@@ -114,7 +106,7 @@ class CustomDiscoverer extends Discoverer
             }
 
             $this->mcpToolsService->cleanObsoleteTools($this->discoveredTools);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('Error during file finding process for MCP discovery', [
                 'exception' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -131,7 +123,7 @@ class CustomDiscoverer extends Discoverer
         ]);
     }
 
-    private function processFile(SplFileInfo $file, array &$discoveredCount): void
+    private function processFile(\SplFileInfo $file, array &$discoveredCount): void
     {
         $filePath = $file->getRealPath();
         if (false === $filePath) {
@@ -148,7 +140,7 @@ class CustomDiscoverer extends Discoverer
         }
 
         try {
-            $reflectionClass = new ReflectionClass($className);
+            $reflectionClass = new \ReflectionClass($className);
 
             if ($reflectionClass->isAbstract() || $reflectionClass->isInterface() || $reflectionClass->isTrait() || $reflectionClass->isEnum()) {
                 return;
@@ -160,7 +152,7 @@ class CustomDiscoverer extends Discoverer
                 if ($invokeMethod->isPublic() && !$invokeMethod->isStatic()) {
                     $attributeTypes = [McpTool::class, McpResource::class, McpPrompt::class, McpResourceTemplate::class];
                     foreach ($attributeTypes as $attributeType) {
-                        $classAttribute = $reflectionClass->getAttributes($attributeType, ReflectionAttribute::IS_INSTANCEOF)[0] ?? null;
+                        $classAttribute = $reflectionClass->getAttributes($attributeType, \ReflectionAttribute::IS_INSTANCEOF)[0] ?? null;
                         if ($classAttribute) {
                             $this->processMethod($invokeMethod, $discoveredCount, $classAttribute);
                             $processedViaClassAttribute = true;
@@ -171,7 +163,7 @@ class CustomDiscoverer extends Discoverer
             }
 
             if (!$processedViaClassAttribute) {
-                foreach ($reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+                foreach ($reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
                     if (
                         $method->getDeclaringClass()->getName() !== $reflectionClass->getName()
                         || $method->isStatic() || $method->isAbstract() || $method->isConstructor() || $method->isDestructor() || '__invoke' === $method->getName()
@@ -180,7 +172,7 @@ class CustomDiscoverer extends Discoverer
                     }
                     $attributeTypes = [McpTool::class, McpResource::class, McpPrompt::class, McpResourceTemplate::class];
                     foreach ($attributeTypes as $attributeType) {
-                        $methodAttribute = $method->getAttributes($attributeType, ReflectionAttribute::IS_INSTANCEOF)[0] ?? null;
+                        $methodAttribute = $method->getAttributes($attributeType, \ReflectionAttribute::IS_INSTANCEOF)[0] ?? null;
                         if ($methodAttribute) {
                             $this->processMethod($method, $discoveredCount, $methodAttribute);
                             break;
@@ -188,9 +180,9 @@ class CustomDiscoverer extends Discoverer
                     }
                 }
             }
-        } catch (ReflectionException $e) {
+        } catch (\ReflectionException $e) {
             $this->logger->error('Reflection error processing file for MCP discovery', ['file' => $filePath, 'class' => $className, 'exception' => $e->getMessage()]);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('Unexpected error processing file for MCP discovery', [
                 'file' => $filePath,
                 'class' => $className,
@@ -200,7 +192,7 @@ class CustomDiscoverer extends Discoverer
         }
     }
 
-    private function processMethod(ReflectionMethod $method, array &$discoveredCount, ReflectionAttribute $attribute): void
+    private function processMethod(\ReflectionMethod $method, array &$discoveredCount, \ReflectionAttribute $attribute): void
     {
         $attributeClassName = $attribute->getName();
 
@@ -226,16 +218,16 @@ class CustomDiscoverer extends Discoverer
         }
     }
 
-    private function getCompletionProviders(ReflectionMethod $reflectionMethod): array
+    private function getCompletionProviders(\ReflectionMethod $reflectionMethod): array
     {
         $completionProviders = [];
         foreach ($reflectionMethod->getParameters() as $param) {
             $reflectionType = $param->getType();
-            if ($reflectionType instanceof ReflectionNamedType && !$reflectionType->isBuiltin()) {
+            if ($reflectionType instanceof \ReflectionNamedType && !$reflectionType->isBuiltin()) {
                 continue;
             }
 
-            $completionAttributes = $param->getAttributes(CompletionProvider::class, ReflectionAttribute::IS_INSTANCEOF);
+            $completionAttributes = $param->getAttributes(CompletionProvider::class, \ReflectionAttribute::IS_INSTANCEOF);
             if (!empty($completionAttributes)) {
                 $attributeInstance = $completionAttributes[0]->newInstance();
 
@@ -276,7 +268,7 @@ class CustomDiscoverer extends Discoverer
             }
 
             $tokens = token_get_all($content);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             $this->logger->warning("Failed to read or tokenize file during class discovery: {$filePath}", ['exception' => $e->getMessage()]);
 
             return null;
@@ -331,7 +323,7 @@ class CustomDiscoverer extends Discoverer
                 for ($j = $i + 1; $j < $tokenCount; ++$j) {
                     if (is_array($tokens[$j]) && T_STRING === $tokens[$j][0]) {
                         $className = $tokens[$j][1];
-                        $potentialClasses[] = $namespace ? $namespace.'\\'.$className : $className;
+                        $potentialClasses[] = $namespace ? $namespace . '\\' . $className : $className;
                         $i = $j;
                         break;
                     }
@@ -359,7 +351,7 @@ class CustomDiscoverer extends Discoverer
         return null;
     }
 
-    private function processTool(ReflectionMethod $method, array &$discoveredCount, ReflectionAttribute $attribute, string $attributeClassName)
+    private function processTool(\ReflectionMethod $method, array &$discoveredCount, \ReflectionAttribute $attribute, string $attributeClassName)
     {
         $className = $method->getDeclaringClass()->getName();
         $classShortName = $method->getDeclaringClass()->getShortName();
@@ -375,7 +367,7 @@ class CustomDiscoverer extends Discoverer
             $tool = Tool::make($name, $inputSchema, $description, $instance->annotations);
 
             $folderModuleName = $this->getModuleNameFromClass($className);
-            $module = Module::getInstanceByName($folderModuleName);
+            $module = \Module::getInstanceByName($folderModuleName);
 
             if (!$module) {
                 $this->logger->error("Failed to process MCP attribute for class {$className}, module not found on shop");
@@ -400,12 +392,12 @@ class CustomDiscoverer extends Discoverer
             ];
         } catch (McpServerException $e) {
             $this->logger->error("Failed to process MCP attribute on {$className}::{$methodName}", ['attribute' => $attributeClassName, 'exception' => $e->getMessage(), 'trace' => $e->getPrevious() ? $e->getPrevious()->getTraceAsString() : $e->getTraceAsString()]);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             $this->logger->error("Unexpected error processing attribute on {$className}::{$methodName}", ['attribute' => $attributeClassName, 'exception' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
         }
     }
 
-    private function processPrompt(ReflectionMethod $method, array &$discoveredCount, ReflectionAttribute $attribute, string $attributeClassName)
+    private function processPrompt(\ReflectionMethod $method, array &$discoveredCount, \ReflectionAttribute $attribute, string $attributeClassName)
     {
         $className = $method->getDeclaringClass()->getName();
         $classShortName = $method->getDeclaringClass()->getShortName();
@@ -421,10 +413,10 @@ class CustomDiscoverer extends Discoverer
             $paramTags = $this->docBlockParser->getParamTags($docBlock);
             foreach ($method->getParameters() as $param) {
                 $reflectionType = $param->getType();
-                if ($reflectionType instanceof ReflectionNamedType && !$reflectionType->isBuiltin()) {
+                if ($reflectionType instanceof \ReflectionNamedType && !$reflectionType->isBuiltin()) {
                     continue;
                 }
-                $paramTag = $paramTags['$'.$param->getName()] ?? null;
+                $paramTag = $paramTags['$' . $param->getName()] ?? null;
                 $arguments[] = PromptArgument::make($param->getName(), $paramTag ? trim((string) $paramTag->getDescription()) : null, !$param->isOptional() && !$param->isDefaultValueAvailable());
             }
             $prompt = Prompt::make($name, $description, $arguments);
@@ -433,12 +425,12 @@ class CustomDiscoverer extends Discoverer
             ++$discoveredCount['prompts'];
         } catch (McpServerException $e) {
             $this->logger->error("Failed to process MCP attribute on {$className}::{$methodName}", ['attribute' => $attributeClassName, 'exception' => $e->getMessage(), 'trace' => $e->getPrevious() ? $e->getPrevious()->getTraceAsString() : $e->getTraceAsString()]);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             $this->logger->error("Unexpected error processing attribute on {$className}::{$methodName}", ['attribute' => $attributeClassName, 'exception' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
         }
     }
 
-    private function processResource(ReflectionMethod $method, array &$discoveredCount, ReflectionAttribute $attribute, string $attributeClassName)
+    private function processResource(\ReflectionMethod $method, array &$discoveredCount, \ReflectionAttribute $attribute, string $attributeClassName)
     {
         $className = $method->getDeclaringClass()->getName();
         $classShortName = $method->getDeclaringClass()->getShortName();
@@ -458,12 +450,12 @@ class CustomDiscoverer extends Discoverer
             ++$discoveredCount['resources'];
         } catch (McpServerException $e) {
             $this->logger->error("Failed to process MCP attribute on {$className}::{$methodName}", ['attribute' => $attributeClassName, 'exception' => $e->getMessage(), 'trace' => $e->getPrevious() ? $e->getPrevious()->getTraceAsString() : $e->getTraceAsString()]);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             $this->logger->error("Unexpected error processing attribute on {$className}::{$methodName}", ['attribute' => $attributeClassName, 'exception' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
         }
     }
 
-    private function processResourceTemplate(ReflectionMethod $method, array &$discoveredCount, ReflectionAttribute $attribute, string $attributeClassName)
+    private function processResourceTemplate(\ReflectionMethod $method, array &$discoveredCount, \ReflectionAttribute $attribute, string $attributeClassName)
     {
         $className = $method->getDeclaringClass()->getName();
         $classShortName = $method->getDeclaringClass()->getShortName();
@@ -483,14 +475,14 @@ class CustomDiscoverer extends Discoverer
             ++$discoveredCount['resourceTemplates'];
         } catch (McpServerException $e) {
             $this->logger->error("Failed to process MCP attribute on {$className}::{$methodName}", ['attribute' => $attributeClassName, 'exception' => $e->getMessage(), 'trace' => $e->getPrevious() ? $e->getPrevious()->getTraceAsString() : $e->getTraceAsString()]);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             $this->logger->error("Unexpected error processing attribute on {$className}::{$methodName}", ['attribute' => $attributeClassName, 'exception' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
         }
     }
 
     private function getModuleNameFromClass(string $className): ?string
     {
-        $ref = new ReflectionClass($className);
+        $ref = new \ReflectionClass($className);
         $filePath = $ref->getFileName();
 
         if (!$filePath) {

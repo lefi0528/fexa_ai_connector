@@ -13,9 +13,6 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Mcp\Tools;
 
-use Configuration;
-use Context;
-use Language;
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
 
@@ -35,7 +32,7 @@ class ShopTools
     )]
     public function listLanguages(): array
     {
-        $languages = Language::getLanguages(true, Context::getContext()->shop->id);
+        $languages = \Language::getLanguages(true, \Context::getContext()->shop->id);
 
         return array_map(function ($l) {
             return [
@@ -43,7 +40,7 @@ class ShopTools
                 'name' => $l['name'],
                 'iso_code' => $l['iso_code'],
                 'language_code' => $l['language_code'],
-                'is_default' => (int) $l['id_lang'] === (int) Configuration::get('PS_LANG_DEFAULT'),
+                'is_default' => (int) $l['id_lang'] === (int) \Configuration::get('PS_LANG_DEFAULT'),
             ];
         }, $languages);
     }

@@ -13,8 +13,6 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Helper;
 
-use Module;
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -23,7 +21,7 @@ class ShopIdHelper
 {
     public static function getShopId(): ?string
     {
-        $accountModule = Module::getInstanceByName('ps_accounts');
+        $accountModule = \Module::getInstanceByName('ps_accounts');
 
         if (!$accountModule) {
             return null;

@@ -13,10 +13,6 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Helper;
 
-use Module;
-use ModuleCore;
-use Tools;
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -25,12 +21,12 @@ class ModuleHelper
 {
     public function buildModuleInformation(string $technicalName, ?string $nameIfMissing = null): array
     {
-        $baseUrl = Tools::getShopDomainSsl(true, true);
+        $baseUrl = \Tools::getShopDomainSsl(true, true);
 
         return [
             'technicalName' => $technicalName,
-            'name' => $this->isInstalled($technicalName) ? ModuleCore::getModuleName($technicalName) : ($nameIfMissing ?? 'Unknown Module'),
-            'logo' => $this->isInstalled($technicalName) ? $baseUrl.__PS_BASE_URI__.'modules/'.$technicalName.'/logo.png' : $baseUrl.__PS_BASE_URI__.'modules/fexa_ai_connector/logo.png',
+            'name' => $this->isInstalled($technicalName) ? \ModuleCore::getModuleName($technicalName) : ($nameIfMissing ?? 'Unknown Module'),
+            'logo' => $this->isInstalled($technicalName) ? $baseUrl . __PS_BASE_URI__ . 'modules/' . $technicalName . '/logo.png' : $baseUrl . __PS_BASE_URI__ . 'modules/fexa_ai_connector/logo.png',
             'installState' => $this->isInstalled($technicalName)
                 ? ($this->isEnabled($technicalName) ? 'installed' : 'disabled')
                 : 'uninstalled',
@@ -40,12 +36,12 @@ class ModuleHelper
 
     private function isInstalled(string $moduleName)
     {
-        return ModuleCore::isInstalled($moduleName);
+        return \ModuleCore::isInstalled($moduleName);
     }
 
     private function isEnabled(string $moduleName)
     {
-        return ModuleCore::isEnabled($moduleName);
+        return \ModuleCore::isEnabled($moduleName);
     }
 
     private function getModuleVersion(string $moduleName)
@@ -54,7 +50,7 @@ class ModuleHelper
             return '0.0.0';
         }
 
-        $module = Module::getInstanceByName($moduleName);
+        $module = \Module::getInstanceByName($moduleName);
 
         if (false === $module) {
             return '0.0.0';

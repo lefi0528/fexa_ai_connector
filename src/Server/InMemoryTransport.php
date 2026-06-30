@@ -13,8 +13,6 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Server;
 
-use Configuration;
-use Context;
 use Evenement\EventEmitterTrait;
 use PhpMcp\Schema\JsonRpc\Error;
 use PhpMcp\Schema\JsonRpc\Message;
@@ -22,15 +20,11 @@ use PhpMcp\Schema\JsonRpc\Parser;
 use PhpMcp\Server\Contracts\LoggerAwareInterface;
 use PhpMcp\Server\Contracts\ServerTransportInterface;
 use PrestaShop\Module\FexaAiConnector\Http\HttpConstants;
-use PrestaShopException;
-
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use React\Promise\PromiseInterface;
 
 use function React\Promise\resolve;
-
-use Throwable;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -49,10 +43,10 @@ class InMemoryTransport implements ServerTransportInterface, LoggerAwareInterfac
     {
         $this->logger = new NullLogger();
 
-        $context = Context::getContext();
+        $context = \Context::getContext();
 
         if (null === $context) {
-            throw new PrestaShopException('Context is not defined');
+            throw new \PrestaShopException('Context is not defined');
         }
     }
 
@@ -173,9 +167,9 @@ class InMemoryTransport implements ServerTransportInterface, LoggerAwareInterfac
 
         try {
             $message = Parser::parse($request);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             $this->logger->error('Failed to parse MCP message from POST body', ['error' => $e->getMessage()]);
-            $this->sendInvalidRequestError(400, 'Invalid JSON: '.$e->getMessage());
+            $this->sendInvalidRequestError(400, 'Invalid JSON: ' . $e->getMessage());
         }
 
         $this->emit('client_connected', [$this->sessionId]);
@@ -220,8 +214,8 @@ class InMemoryTransport implements ServerTransportInterface, LoggerAwareInterfac
                      (!empty($_SERVER['HTTP_X_MCP_API_KEY']) ? $_SERVER['HTTP_X_MCP_API_KEY'] :
                      ($_REQUEST['token'] ?? null));
 
-        $apiKey = Configuration::get('FEXA_AI_API_KEY');
-        if ($apiKey && ($authHeader === 'Bearer '.$apiKey || $authHeader === $apiKey)) {
+        $apiKey = \Configuration::get('FEXA_AI_API_KEY');
+        if ($apiKey && ($authHeader === 'Bearer ' . $apiKey || $authHeader === $apiKey)) {
             return;
         }
 
@@ -256,7 +250,7 @@ class InMemoryTransport implements ServerTransportInterface, LoggerAwareInterfac
         $responseBody = json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         if ($this->useSSE) {
-            echo 'data: '.$responseBody."\n\n";
+            echo 'data: ' . $responseBody . "\n\n";
         } else {
             echo $responseBody;
         }

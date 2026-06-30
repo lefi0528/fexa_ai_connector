@@ -23,7 +23,7 @@ class SegmentClient
 {
     private Client $httpClient;
     private string $writeKey;
-    private static string $trackEndpoint = SEGMENT_URL.'track';
+    private static string $trackEndpoint = SEGMENT_URL . 'track';
 
     public function __construct(string $writeKey, ?Client $httpClient)
     {

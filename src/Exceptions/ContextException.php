@@ -13,12 +13,10 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Exceptions;
 
-use Exception;
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-class ContextException extends Exception
+class ContextException extends \Exception
 {
 }

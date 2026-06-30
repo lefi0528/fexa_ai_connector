@@ -13,7 +13,6 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Controller\Admin;
 
-use Configuration;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -27,7 +26,7 @@ class FexaAiConfigController extends AbstractFexaAdminController
     {
         return $this->render('@Modules/fexa_ai_connector/views/templates/admin/base.html.twig', [
             'layoutTitle' => 'Fexa AI - MCP Configuration',
-            'mcp_api_key' => Configuration::get('FEXA_AI_API_KEY'),
+            'mcp_api_key' => \Configuration::get('FEXA_AI_API_KEY'),
         ]);
     }
 }

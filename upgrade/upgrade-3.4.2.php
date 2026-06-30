@@ -10,7 +10,6 @@
  * @copyright 2025 Fexa AI
  * @license   Proprietary
  */
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }

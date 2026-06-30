@@ -10,7 +10,6 @@
  * @copyright 2025 Fexa AI
  * @license   Proprietary
  */
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -23,7 +22,7 @@ if (!defined('_PS_VERSION_')) {
 function upgrade_module_3_4_6($module)
 {
     // Drop any cached tool list so the new count_catalog tool is registered.
-    $cacheFile = _PS_MODULE_DIR_.'fexa_ai_connector/.mcp/.cache_v2.json';
+    $cacheFile = _PS_MODULE_DIR_ . 'fexa_ai_connector/.mcp/.cache_v2.json';
     if (is_file($cacheFile)) {
         @unlink($cacheFile);
     }

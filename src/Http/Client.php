@@ -13,10 +13,6 @@
 
 namespace PrestaShop\Module\FexaAiConnector\Http;
 
-use CURLFile;
-use CurlHandle;
-use PrestaShopException;
-
 if (!defined('_PS_VERSION_')) {
     exit;
 }
@@ -43,7 +39,7 @@ class Client
 
     private array $headers = [];
 
-    public CurlHandle $curl;
+    public \CurlHandle $curl;
 
     public $error = false;
 
@@ -82,7 +78,7 @@ class Client
 
     public function __wakeup()
     {
-        throw new PrestaShopException('Cannot unserialize a singleton.');
+        throw new \PrestaShopException('Cannot unserialize a singleton.');
     }
 
     public static function getInstance()
@@ -172,7 +168,7 @@ class Client
         if (is_array($data) || is_object($data)) {
             $skip = false;
             foreach ($data as $value) {
-                if ($value instanceof CURLFile) {
+                if ($value instanceof \CURLFile) {
                     $skip = true;
                 }
             }
@@ -201,7 +197,7 @@ class Client
         $this->setHeaders($headers);
 
         if (!is_null($data) && is_array($data) && count($data) > 0) {
-            $this->setOpt(CURLOPT_URL, $url.'?'.http_build_query($data));
+            $this->setOpt(CURLOPT_URL, $url . '?' . http_build_query($data));
         } else {
             $this->setOpt(CURLOPT_URL, $url);
         }
@@ -227,7 +223,7 @@ class Client
             rewind($temp);
 
             $tempPath = stream_get_meta_data($temp)['uri'];
-            $payload = ['file' => new CURLFile($tempPath, 'text/plain', 'file')];
+            $payload = ['file' => new \CURLFile($tempPath, 'text/plain', 'file')];
             $this->preparePayload($payload);
         } else {
             $this->prepareJsonPayload($data);
@@ -254,7 +250,7 @@ class Client
 
         if (!empty($data)) {
             if (false === $payload) {
-                $url .= '?'.http_build_query($data);
+                $url .= '?' . http_build_query($data);
             } else {
                 $this->preparePayload($data);
             }
@@ -279,7 +275,7 @@ class Client
 
         if (!empty($data)) {
             if (false === $payload) {
-                $url .= '?'.http_build_query($data);
+                $url .= '?' . http_build_query($data);
             } else {
                 $this->preparePayload($data);
             }
@@ -304,7 +300,7 @@ class Client
 
         if (!empty($data)) {
             if (false === $payload) {
-                $url .= '?'.http_build_query($data);
+                $url .= '?' . http_build_query($data);
             } else {
                 $this->preparePayload($data);
             }
@@ -320,7 +316,7 @@ class Client
     public function setBasicAuthentication($username, $password)
     {
         $this->setHttpAuth(self::AUTH_BASIC);
-        $this->setOpt(CURLOPT_USERPWD, $username.':'.$password);
+        $this->setOpt(CURLOPT_USERPWD, $username . ':' . $password);
 
         return $this;
     }
@@ -329,7 +325,7 @@ class Client
     {
         if (!empty($headers)) {
             foreach ($headers as $key => $value) {
-                $this->headers[$key] = $key.': '.$value;
+                $this->headers[$key] = $key . ': ' . $value;
                 $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->headers));
             }
         }

@@ -14,13 +14,9 @@
 namespace PrestaShop\Module\FexaAiConnector\Mcp\Tools;
 
 use CMS;
-use Configuration;
-use Context;
-use Exception;
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
 use PrestaShop\Module\FexaAiConnector\Helper\HtmlSanitizer;
-use Validate;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -42,14 +38,14 @@ class CmsTools
     )]
     public function listCms(?int $langId = null, int $limit = 100, int $offset = 0): array
     {
-        $context = Context::getContext();
+        $context = \Context::getContext();
         $idLang = $langId ?? $context->language->id;
 
         if (!$idLang) {
-            $idLang = (int) Configuration::get('PS_LANG_DEFAULT');
+            $idLang = (int) \Configuration::get('PS_LANG_DEFAULT');
         }
 
-        $cmsPages = CMS::getCMSPages($idLang, null, true); // Active only
+        $cmsPages = \CMS::getCMSPages($idLang, null, true); // Active only
 
         // Apply pagination (limit and offset)
         if ($offset > 0 || count($cmsPages) > $limit) {
@@ -59,7 +55,7 @@ class CmsTools
         return array_map(function ($c) use ($idLang, $context) {
             return [
                 'id' => (int) $c['id_cms'],
-                'name' => !empty($c['meta_title']) ? $c['meta_title'] : 'CMS #'.$c['id_cms'],
+                'name' => !empty($c['meta_title']) ? $c['meta_title'] : 'CMS #' . $c['id_cms'],
                 'meta_title' => $c['meta_title'] ?? '',
                 'link_rewrite' => $c['link_rewrite'] ?? '',
                 'url' => $context->link->getCMSLink((int) $c['id_cms'], $c['link_rewrite'] ?? '', null, $idLang),
@@ -82,13 +78,13 @@ class CmsTools
     )]
     public function getCmsDetails(int $id_cms, ?int $id_lang = null): array
     {
-        $context = Context::getContext();
+        $context = \Context::getContext();
         $idLang = $id_lang ?? $context->language->id;
 
-        $cms = new CMS($id_cms, $idLang);
+        $cms = new \CMS($id_cms, $idLang);
 
-        if (!Validate::isLoadedObject($cms)) {
-            throw new Exception("CMS page with ID $id_cms not found.");
+        if (!\Validate::isLoadedObject($cms)) {
+            throw new \Exception("CMS page with ID $id_cms not found.");
         }
 
         return [
@@ -127,19 +123,19 @@ class CmsTools
         ?string $meta_title = null,
         ?string $meta_description = null,
         ?string $link_rewrite = null,
-        bool $update_slug = true
+        bool $update_slug = true,
     ): array {
-        $context = Context::getContext();
+        $context = \Context::getContext();
         $id_lang = $id_lang ?? (int) $context->language->id;
 
         if (!$id_lang) {
-            $id_lang = (int) Configuration::get('PS_LANG_DEFAULT');
+            $id_lang = (int) \Configuration::get('PS_LANG_DEFAULT');
         }
 
-        $cms = new CMS($id_cms);
+        $cms = new \CMS($id_cms);
 
-        if (!Validate::isLoadedObject($cms)) {
-            throw new Exception("CMS with ID $id_cms not found.");
+        if (!\Validate::isLoadedObject($cms)) {
+            throw new \Exception("CMS with ID $id_cms not found.");
         }
 
         $fieldsUpdated = [];
@@ -187,7 +183,7 @@ class CmsTools
         }
 
         if (!$cms->save()) {
-            throw new Exception("Failed to save CMS ID $id_cms");
+            throw new \Exception("Failed to save CMS ID $id_cms");
         }
 
         return [

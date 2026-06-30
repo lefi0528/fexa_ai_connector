@@ -12,19 +12,15 @@
  */
 
 /*
- * PHP-CS-Fixer config for the Fexa AI Connector module.
+ * PHP-CS-Fixer config — EXACT PrestaShop coding standard (mirrors
+ * PrestaShop\CodingStandards\CsFixer\Config from prestashop/php-dev-tools, which is what the
+ * PrestaShop validator checks "Standards" against) PLUS the Fexa header_comment (for "Licenses").
  *
- * Clears the PrestaShop validator's "Standards" + "Licenses" sections in one pass:
- *   - stamps the file header (adds the missing @author / @copyright / @license),
- *   - normalises line endings to LF (line_ending),
- *   - orders + de-duplicates imports (ordered_imports, no_unused_imports),
- *   - imports global classes (global_namespace_import),
- *   - aligns docblocks, trailing commas, cast spacing, single quotes, etc.
+ * IMPORTANT: do NOT add global_namespace_import:import_classes=true, custom ordered_imports, etc.
+ * The PrestaShop standard (@Symfony) wants global classes FULLY-QUALIFIED (\Context, \Category) —
+ * importing them is what made a previous run explode the Standards count.
  *
- * Install + run (in your PHP 8.1+ environment, NOT committed to the package):
- *   composer require --dev friendsofphp/php-cs-fixer
- *   vendor/bin/php-cs-fixer fix
- * Then re-zip and resubmit to https://validator.prestashop.com
+ * Run:  vendor/bin/php-cs-fixer fix   (or:  php php-cs-fixer.phar fix)
  */
 
 $header = <<<'EOF'
@@ -46,31 +42,37 @@ $finder = PhpCsFixer\Finder::create()
 
 return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)
-    ->setLineEnding("\n")
     ->setRules([
         '@Symfony' => true,
+        'concat_space' => ['spacing' => 'one'],
+        'cast_spaces' => ['space' => 'single'],
+        'error_suppression' => [
+            'mute_deprecation_error' => false,
+            'noise_remaining_usages' => false,
+            'noise_remaining_usages_exclude' => [],
+        ],
+        'function_to_constant' => false,
+        'visibility_required' => ['elements' => ['property', 'method']],
+        'no_alias_functions' => false,
+        'phpdoc_summary' => false,
+        'phpdoc_align' => ['align' => 'left'],
+        'protected_to_private' => false,
+        'psr_autoloading' => false,
+        'self_accessor' => false,
+        'yoda_style' => false,
+        'non_printable_character' => true,
+        'no_superfluous_phpdoc_tags' => false,
+        // Header must sit FLUSH against <?php (Licenses: "no blank lines before the file comment").
+        // @Symfony's default would insert a blank line after the opening tag — disable it.
+        'blank_line_after_opening_tag' => false,
+        // Fexa proprietary header (satisfies "Licenses": @author + no blank line before the comment).
+        // separate:none so php-cs-fixer's namespace/phpdoc spacing rules decide what follows (one
+        // blank before `namespace`, none before plain code in index.php).
         'header_comment' => [
             'header' => $header,
             'comment_type' => 'PHPDoc',
             'location' => 'after_open',
-            'separate' => 'bottom',
+            'separate' => 'none',
         ],
-        // Header must sit immediately after <?php (the validator: "no blank lines before the file comment").
-        'blank_line_after_opening_tag' => false,
-        'line_ending' => true,
-        'array_syntax' => ['syntax' => 'short'],
-        'ordered_imports' => ['sort_algorithm' => 'alpha'],
-        'no_unused_imports' => true,
-        'global_namespace_import' => [
-            'import_classes' => true,
-            'import_constants' => false,
-            'import_functions' => false,
-        ],
-        'align_multiline_comment' => ['comment_type' => 'phpdocs_only'],
-        'trailing_comma_in_multiline' => true,
-        'cast_spaces' => ['space' => 'single'],
-        'single_quote' => true,
-        'no_extra_blank_lines' => true,
-        'no_blank_lines_after_phpdoc' => true,
     ])
     ->setFinder($finder);

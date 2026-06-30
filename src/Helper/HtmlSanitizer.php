@@ -36,7 +36,7 @@ class HtmlSanitizer
             return '';
         }
 
-        return trim((string) Tools::purifyHTML($html));
+        return trim((string) \Tools::purifyHTML($html));
     }
 
     /** Plain text + length cap for meta / short fields (HTML in meta breaks save()). */
@@ -72,8 +72,8 @@ class HtmlSanitizer
      */
     public static function slug(string $text): string
     {
-        $slug = (string) Tools::str2url($text);
+        $slug = (string) \Tools::str2url($text);
 
-        return Validate::isLinkRewrite($slug) ? $slug : '';
+        return \Validate::isLinkRewrite($slug) ? $slug : '';
     }
 }
