@@ -1,15 +1,14 @@
 <?php
-
 /**
  * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
  *
- * Upgrade to 3.4.2 — translatable name & URL slug:
- *  - update_product_seo / update_category_seo now accept `name` and `link_rewrite`,
- *  - update_cms_seo now accepts `link_rewrite`,
- *  so translations also localize the product/category title and the URL slug.
- *  Forces MCP re-discovery so the new tool parameters are picked up.
+ * This module is proprietary software owned by Fexa AI.
+ *
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 if (!defined('_PS_VERSION_')) {

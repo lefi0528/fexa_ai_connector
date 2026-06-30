@@ -1,13 +1,14 @@
 <?php
-
 /**
  * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
  *
- * Upgrade to 3.4.3 — add the `update_slug` flag to update_product_seo /
- * update_category_seo / update_cms_seo so re-translations can preserve already
- * indexed URLs. Forces MCP re-discovery so the new parameter is advertised.
+ * This module is proprietary software owned by Fexa AI.
+ *
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 if (!defined('_PS_VERSION_')) {

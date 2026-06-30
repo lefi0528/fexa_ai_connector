@@ -1,31 +1,36 @@
 <?php
-
 /**
  * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
  *
- * This module is proprietary software owned by Fexa AI. All intellectual property rights, including copyrights, trademarks, and trade secrets, are reserved by Fexa AI.
+ * This module is proprietary software owned by Fexa AI.
+ *
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 namespace PrestaShop\Module\FexaAiConnector\Server;
 
+use Configuration;
+use Context;
 use Evenement\EventEmitterTrait;
 use PhpMcp\Schema\JsonRpc\Error;
 use PhpMcp\Schema\JsonRpc\Message;
 use PhpMcp\Schema\JsonRpc\Parser;
-use PhpMcp\Schema\JsonRpc\Request;
 use PhpMcp\Server\Contracts\LoggerAwareInterface;
 use PhpMcp\Server\Contracts\ServerTransportInterface;
-use PrestaShop\Module\FexaAiConnector\Exceptions\ContextException;
 use PrestaShop\Module\FexaAiConnector\Http\HttpConstants;
-use PrestaShop\PrestaShop\Core\Addon\Module\ModuleManagerBuilder;
-use PrestaShop\PrestaShop\Core\Module\ModuleManager;
+use PrestaShopException;
+
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use React\Promise\PromiseInterface;
 
 use function React\Promise\resolve;
+
+use Throwable;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -44,10 +49,10 @@ class InMemoryTransport implements ServerTransportInterface, LoggerAwareInterfac
     {
         $this->logger = new NullLogger();
 
-        $context = \Context::getContext();
+        $context = Context::getContext();
 
-        if ($context === null) {
-            throw new \PrestaShopException('Context is not defined');
+        if (null === $context) {
+            throw new PrestaShopException('Context is not defined');
         }
     }
 
@@ -85,7 +90,7 @@ class InMemoryTransport implements ServerTransportInterface, LoggerAwareInterfac
 
         $this->sendHeaders();
 
-        if ($_SERVER['REQUEST_METHOD'] !== 'OPTIONS') {
+        if ('OPTIONS' !== $_SERVER['REQUEST_METHOD']) {
             $this->checkAuthorization();
         }
 
@@ -157,7 +162,7 @@ class InMemoryTransport implements ServerTransportInterface, LoggerAwareInterfac
         }
 
         $request = file_get_contents('php://input');
-        if ($request === false) {
+        if (false === $request) {
             $this->logger->warning('Received empty POST body');
             $this->sendInvalidRequestError(400, 'Empty request body.');
 
@@ -168,9 +173,9 @@ class InMemoryTransport implements ServerTransportInterface, LoggerAwareInterfac
 
         try {
             $message = Parser::parse($request);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->error('Failed to parse MCP message from POST body', ['error' => $e->getMessage()]);
-            $this->sendInvalidRequestError(400, 'Invalid JSON: ' . $e->getMessage());
+            $this->sendInvalidRequestError(400, 'Invalid JSON: '.$e->getMessage());
         }
 
         $this->emit('client_connected', [$this->sessionId]);
@@ -215,8 +220,8 @@ class InMemoryTransport implements ServerTransportInterface, LoggerAwareInterfac
                      (!empty($_SERVER['HTTP_X_MCP_API_KEY']) ? $_SERVER['HTTP_X_MCP_API_KEY'] :
                      ($_REQUEST['token'] ?? null));
 
-        $apiKey = \Configuration::get('FEXA_AI_API_KEY');
-        if ($apiKey && ($authHeader === 'Bearer ' . $apiKey || $authHeader === $apiKey)) {
+        $apiKey = Configuration::get('FEXA_AI_API_KEY');
+        if ($apiKey && ($authHeader === 'Bearer '.$apiKey || $authHeader === $apiKey)) {
             return;
         }
 
@@ -251,13 +256,14 @@ class InMemoryTransport implements ServerTransportInterface, LoggerAwareInterfac
         $responseBody = json_encode($message, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         if ($this->useSSE) {
-            echo 'data: ' . $responseBody . "\n\n";
+            echo 'data: '.$responseBody."\n\n";
         } else {
             echo $responseBody;
         }
 
         flush();
     }
+
     private function sendInvalidRequestError(int $code, string $message): void
     {
         $error = Error::forInvalidRequest($message);

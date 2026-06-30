@@ -1,16 +1,23 @@
 <?php
-
 /**
  * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
  *
- * This module is proprietary software owned by Fexa AI. All intellectual property rights, including copyrights, trademarks, and trade secrets, are reserved by Fexa AI.
+ * This module is proprietary software owned by Fexa AI.
+ *
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 namespace PrestaShop\Module\FexaAiConnector\Server;
 
+use DateInterval;
+use DateTimeImmutable;
+use InvalidArgumentException;
 use Psr\SimpleCache\CacheInterface;
+use Throwable;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -49,7 +56,7 @@ class CustomFileCache implements CacheInterface
         $key = $this->sanitizeKey($key);
 
         $handle = @fopen($this->cacheFile, 'c+b');
-        if ($handle === false) {
+        if (false === $handle) {
             return false;
         }
 
@@ -79,7 +86,7 @@ class CustomFileCache implements CacheInterface
         $key = $this->sanitizeKey($key);
 
         $handle = @fopen($this->cacheFile, 'c+b');
-        if ($handle === false) {
+        if (false === $handle) {
             return true;
         }
 
@@ -207,12 +214,12 @@ class CustomFileCache implements CacheInterface
 
     private function readCacheFile()
     {
-        if (!file_exists($this->cacheFile) || filesize($this->cacheFile) === 0) {
+        if (!file_exists($this->cacheFile) || 0 === filesize($this->cacheFile)) {
             return [];
         }
 
         $handle = @fopen($this->cacheFile, 'rb');
-        if ($handle === false) {
+        if (false === $handle) {
             return [];
         }
 
@@ -223,12 +230,12 @@ class CustomFileCache implements CacheInterface
             $content = stream_get_contents($handle);
             flock($handle, LOCK_UN);
 
-            if ($content === false || $content === '') {
+            if (false === $content || '' === $content) {
                 return [];
             }
 
             $data = json_decode($content, true);
-            if ($data === false) {
+            if (false === $data) {
                 return [];
             }
 
@@ -249,7 +256,7 @@ class CustomFileCache implements CacheInterface
         }
 
         $handle = @fopen($this->cacheFile, 'cb');
-        if ($handle === false) {
+        if (false === $handle) {
             return false;
         }
 
@@ -260,7 +267,7 @@ class CustomFileCache implements CacheInterface
             if (!ftruncate($handle, 0)) {
                 return false;
             }
-            if (fwrite($handle, $jsonData) === false) {
+            if (false === fwrite($handle, $jsonData)) {
                 return false;
             }
             fflush($handle);
@@ -268,7 +275,7 @@ class CustomFileCache implements CacheInterface
             @chmod($this->cacheFile, $this->filePermission);
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             flock($handle, LOCK_UN);
 
             return false;
@@ -283,7 +290,7 @@ class CustomFileCache implements CacheInterface
     {
         if (!is_dir($directory)) {
             if (!@mkdir($directory, $this->dirPermission, true)) {
-                throw new \InvalidArgumentException("Cache directory does not exist and could not be created: {$directory}");
+                throw new InvalidArgumentException("Cache directory does not exist and could not be created: {$directory}");
             }
             @chmod($directory, $this->dirPermission);
         }
@@ -291,32 +298,32 @@ class CustomFileCache implements CacheInterface
 
     private function calculateExpiry($ttl)
     {
-        if ($ttl === null) {
+        if (null === $ttl) {
             return null;
         }
         $now = time();
         if (is_int($ttl)) {
             return $ttl <= 0 ? $now - 1 : $now + $ttl;
         }
-        if ($ttl instanceof \DateInterval) {
+        if ($ttl instanceof DateInterval) {
             try {
-                return (new \DateTimeImmutable())->add($ttl)->getTimestamp();
-            } catch (\Throwable $e) {
+                return (new DateTimeImmutable())->add($ttl)->getTimestamp();
+            } catch (Throwable $e) {
                 return null;
             }
         }
-        throw new \InvalidArgumentException('Invalid TTL type provided. Must be null, int, or DateInterval.');
+        throw new InvalidArgumentException('Invalid TTL type provided. Must be null, int, or DateInterval.');
     }
 
     private function isExpired($expiry)
     {
-        return $expiry !== null && time() >= $expiry;
+        return null !== $expiry && time() >= $expiry;
     }
 
     private function sanitizeKey($key)
     {
-        if ($key === '') {
-            throw new \InvalidArgumentException('Cache key cannot be empty.');
+        if ('' === $key) {
+            throw new InvalidArgumentException('Cache key cannot be empty.');
         }
 
         return $key;
@@ -326,7 +333,7 @@ class CustomFileCache implements CacheInterface
     {
         foreach ($keys as $key) {
             if (!is_string($key)) {
-                throw new \InvalidArgumentException('Cache key must be a string, got ' . gettype($key));
+                throw new InvalidArgumentException('Cache key must be a string, got '.gettype($key));
             }
             $this->sanitizeKey($key);
         }
@@ -350,13 +357,13 @@ class CustomFileCache implements CacheInterface
         rewind($handle);
         $content = stream_get_contents($handle);
 
-        if ($content === false || $content === '') {
+        if (false === $content || '' === $content) {
             return [];
         }
 
         $data = json_decode($content, true);
 
-        return $data === false ? [] : $data;
+        return false === $data ? [] : $data;
     }
 
     private function writeLockedCacheFile($handle, $data)
@@ -376,7 +383,7 @@ class CustomFileCache implements CacheInterface
 
         rewind($handle);
 
-        if (fwrite($handle, $serializedData) === false) {
+        if (false === fwrite($handle, $serializedData)) {
             return false;
         }
 

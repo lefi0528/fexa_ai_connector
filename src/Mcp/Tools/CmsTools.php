@@ -1,13 +1,26 @@
 <?php
+/**
+ * Copyright (c) 2025 Fexa AI
+ *
+ * All Rights Reserved.
+ *
+ * This module is proprietary software owned by Fexa AI.
+ *
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
+ */
 
 namespace PrestaShop\Module\FexaAiConnector\Mcp\Tools;
 
+use CMS;
+use Configuration;
+use Context;
+use Exception;
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
-use Context;
-use Validate;
-use CMS;
 use PrestaShop\Module\FexaAiConnector\Helper\HtmlSanitizer;
+use Validate;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -23,7 +36,7 @@ class CmsTools
         properties: [
             'langId' => ['type' => 'integer', 'description' => 'Language ID'],
             'limit' => ['type' => 'integer', 'description' => 'Limit results (default 100)'],
-            'offset' => ['type' => 'integer', 'description' => 'Offset for pagination (default 0)']
+            'offset' => ['type' => 'integer', 'description' => 'Offset for pagination (default 0)'],
         ],
         required: []
     )]
@@ -31,27 +44,27 @@ class CmsTools
     {
         $context = Context::getContext();
         $idLang = $langId ?? $context->language->id;
-        
+
         if (!$idLang) {
-             $idLang = (int)\Configuration::get('PS_LANG_DEFAULT');
+            $idLang = (int) Configuration::get('PS_LANG_DEFAULT');
         }
 
-        $cmsPages = \CMS::getCMSPages($idLang, null, true); // Active only
+        $cmsPages = CMS::getCMSPages($idLang, null, true); // Active only
 
         // Apply pagination (limit and offset)
         if ($offset > 0 || count($cmsPages) > $limit) {
             $cmsPages = array_slice($cmsPages, $offset, $limit);
         }
 
-        return array_map(function($c) use ($idLang, $context) {
+        return array_map(function ($c) use ($idLang, $context) {
             return [
-                'id' => (int)$c['id_cms'],
-                'name' => !empty($c['meta_title']) ? $c['meta_title'] : 'CMS #' . $c['id_cms'],
+                'id' => (int) $c['id_cms'],
+                'name' => !empty($c['meta_title']) ? $c['meta_title'] : 'CMS #'.$c['id_cms'],
                 'meta_title' => $c['meta_title'] ?? '',
                 'link_rewrite' => $c['link_rewrite'] ?? '',
-                'url' => $context->link->getCMSLink((int)$c['id_cms'], $c['link_rewrite'] ?? '', null, $idLang),
-                'active' => isset($c['active']) ? (bool)$c['active'] : true, 
-                'type' => 'cms'
+                'url' => $context->link->getCMSLink((int) $c['id_cms'], $c['link_rewrite'] ?? '', null, $idLang),
+                'active' => isset($c['active']) ? (bool) $c['active'] : true,
+                'type' => 'cms',
             ];
         }, $cmsPages);
     }
@@ -63,7 +76,7 @@ class CmsTools
     #[Schema(
         properties: [
             'id_cms' => ['type' => 'integer', 'description' => 'CMS Page ID'],
-            'id_lang' => ['type' => 'integer', 'description' => 'Language ID']
+            'id_lang' => ['type' => 'integer', 'description' => 'Language ID'],
         ],
         required: ['id_cms']
     )]
@@ -72,10 +85,10 @@ class CmsTools
         $context = Context::getContext();
         $idLang = $id_lang ?? $context->language->id;
 
-        $cms = new \CMS($id_cms, $idLang);
+        $cms = new CMS($id_cms, $idLang);
 
         if (!Validate::isLoadedObject($cms)) {
-            throw new \Exception("CMS page with ID $id_cms not found.");
+            throw new Exception("CMS page with ID $id_cms not found.");
         }
 
         return [
@@ -87,7 +100,7 @@ class CmsTools
             'link_rewrite' => $cms->link_rewrite,
             'url' => $context->link->getCMSLink($cms, null, null, $idLang),
             'active' => $cms->active,
-            'indexation' => $cms->indexation
+            'indexation' => $cms->indexation,
         ];
     }
 
@@ -103,7 +116,7 @@ class CmsTools
             'meta_title' => ['type' => 'string', 'description' => 'Meta Title (also the page title)'],
             'meta_description' => ['type' => 'string', 'description' => 'Meta Description'],
             'link_rewrite' => ['type' => 'string', 'description' => 'New URL slug. If omitted but "meta_title" is set, derived from the title.'],
-            'update_slug' => ['type' => 'boolean', 'description' => 'Whether to update the URL slug (default true). Set false to keep the existing slug — e.g. when re-translating a language to preserve already-indexed URLs.']
+            'update_slug' => ['type' => 'boolean', 'description' => 'Whether to update the URL slug (default true). Set false to keep the existing slug — e.g. when re-translating a language to preserve already-indexed URLs.'],
         ],
         required: ['id_cms']
     )]
@@ -115,26 +128,25 @@ class CmsTools
         ?string $meta_description = null,
         ?string $link_rewrite = null,
         bool $update_slug = true
-    ): array
-    {
+    ): array {
         $context = Context::getContext();
-        $id_lang = $id_lang ?? (int)$context->language->id;
+        $id_lang = $id_lang ?? (int) $context->language->id;
 
         if (!$id_lang) {
-            $id_lang = (int)\Configuration::get('PS_LANG_DEFAULT');
+            $id_lang = (int) Configuration::get('PS_LANG_DEFAULT');
         }
 
-        $cms = new \CMS($id_cms);
+        $cms = new CMS($id_cms);
 
         if (!Validate::isLoadedObject($cms)) {
-            throw new \Exception("CMS with ID $id_cms not found.");
+            throw new Exception("CMS with ID $id_cms not found.");
         }
 
         $fieldsUpdated = [];
 
         // Helper to update multi-lang field
-        $updateField = function(&$fieldArray, $newValue, $fieldName) use ($id_lang, &$fieldsUpdated) {
-            if ($newValue !== null) {
+        $updateField = function (&$fieldArray, $newValue, $fieldName) use ($id_lang, &$fieldsUpdated) {
+            if (null !== $newValue) {
                 if (!is_array($fieldArray)) {
                     $fieldArray = [$id_lang => $fieldArray];
                 }
@@ -144,17 +156,23 @@ class CmsTools
         };
 
         // Defense in depth: clean AI content before it reaches the shop.
-        if ($content !== null) $content = HtmlSanitizer::richHtml($content);
-        if ($meta_title !== null) $meta_title = HtmlSanitizer::meta($meta_title, 255);
-        if ($meta_description !== null) $meta_description = HtmlSanitizer::meta($meta_description, 512);
+        if (null !== $content) {
+            $content = HtmlSanitizer::richHtml($content);
+        }
+        if (null !== $meta_title) {
+            $meta_title = HtmlSanitizer::meta($meta_title, 255);
+        }
+        if (null !== $meta_description) {
+            $meta_description = HtmlSanitizer::meta($meta_description, 512);
+        }
 
         // URL slug: only when explicitly provided (the SaaS sends the translated title
         // here and Tools::str2url turns it into a slug). Not derived from meta_title
         // implicitly, so ordinary SEO optimization never changes existing CMS URLs.
         $slug = null;
-        if ($update_slug && $link_rewrite !== null && trim($link_rewrite) !== '') {
+        if ($update_slug && null !== $link_rewrite && '' !== trim($link_rewrite)) {
             $slug = HtmlSanitizer::slug($link_rewrite);
-            if ($slug === '') {
+            if ('' === $slug) {
                 $slug = null;
             }
         }
@@ -169,14 +187,14 @@ class CmsTools
         }
 
         if (!$cms->save()) {
-            throw new \Exception("Failed to save CMS ID $id_cms");
+            throw new Exception("Failed to save CMS ID $id_cms");
         }
 
         return [
             'status' => 'success',
             'cms_id' => $id_cms,
             'lang_id' => $id_lang,
-            'updated_fields' => $fieldsUpdated
+            'updated_fields' => $fieldsUpdated,
         ];
     }
 }

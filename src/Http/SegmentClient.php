@@ -1,11 +1,14 @@
 <?php
-
 /**
  * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
  *
- * This module is proprietary software owned by Fexa AI. All intellectual property rights, including copyrights, trademarks, and trade secrets, are reserved by Fexa AI.
+ * This module is proprietary software owned by Fexa AI.
+ *
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 namespace PrestaShop\Module\FexaAiConnector\Http;
@@ -20,7 +23,7 @@ class SegmentClient
 {
     private Client $httpClient;
     private string $writeKey;
-    private static string $trackEndpoint = SEGMENT_URL . 'track';
+    private static string $trackEndpoint = SEGMENT_URL.'track';
 
     public function __construct(string $writeKey, ?Client $httpClient)
     {
@@ -39,7 +42,7 @@ class SegmentClient
         $request = $this->httpClient->post(self::$trackEndpoint, $headers, $data);
 
         return [
-            'success' => substr((string) $request->getHttpStatus(), 0, 1) === '2',
+            'success' => '2' === substr((string) $request->getHttpStatus(), 0, 1),
             'httpCode' => $request->getHttpStatus(),
             'body' => $request->getResponse(),
         ];

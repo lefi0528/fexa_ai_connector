@@ -1,11 +1,14 @@
 <?php
-
 /**
  * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
  *
- * This module is proprietary software owned by Fexa AI. All intellectual property rights, including copyrights, trademarks, and trade secrets, are reserved by Fexa AI.
+ * This module is proprietary software owned by Fexa AI.
+ *
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 use PrestaShop\Module\FexaAiConnector\Services\McpService;
@@ -24,19 +27,19 @@ class Fexa_ai_connectorMcpServerModuleFrontController extends ModuleFrontControl
         $allowedOrigins = ['https://fexaai.com', 'https://www.fexaai.com'];
         $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
         if (in_array($origin, $allowedOrigins, true)) {
-            header('Access-Control-Allow-Origin: ' . $origin);
+            header('Access-Control-Allow-Origin: '.$origin);
         }
         header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
         header('Access-Control-Allow-Headers: Content-Type, Authorization, X-MCP-API-KEY, Mcp-Protocol-Version, Mcp-Session-Id, Last-Event-ID');
 
         // Handle preflight
-        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        if ('OPTIONS' === $_SERVER['REQUEST_METHOD']) {
             http_response_code(204);
             exit;
         }
 
         // Security: Verify API Key from header or query string
-        $storedKey = \Configuration::get('FEXA_AI_API_KEY');
+        $storedKey = Configuration::get('FEXA_AI_API_KEY');
 
         $apiKey = '';
         // 1. Prefer Authorization header: Bearer <token>
@@ -53,7 +56,7 @@ class Fexa_ai_connectorMcpServerModuleFrontController extends ModuleFrontControl
             // Cast to string: Tools::getValue returns false when absent, and passing
             // false to hash_equals() is a fatal TypeError on PHP 8 (the endpoint would
             // return HTTP 200 with a PHP stack trace instead of a clean 403 JSON).
-            $apiKey = (string) (\Tools::getValue('token') ?: \Tools::getValue('api_key'));
+            $apiKey = (string) (Tools::getValue('token') ?: Tools::getValue('api_key'));
         }
 
         if (!$storedKey || !hash_equals($storedKey, $apiKey)) {
@@ -79,9 +82,9 @@ class Fexa_ai_connectorMcpServerModuleFrontController extends ModuleFrontControl
                 'error' => [
                     'code' => -32000,
                     'message' => 'Le service MCP du module n\'a pas pu être initialisé. '
-                        . 'Videz le cache de PrestaShop (Paramètres avancés → Performances → Vider le cache), '
-                        . 'puis réessayez. Si le problème persiste, vérifiez que le dossier var/cache est '
-                        . 'inscriptible par le serveur web.',
+                        .'Videz le cache de PrestaShop (Paramètres avancés → Performances → Vider le cache), '
+                        .'puis réessayez. Si le problème persiste, vérifiez que le dossier var/cache est '
+                        .'inscriptible par le serveur web.',
                 ],
                 'id' => null,
             ]);

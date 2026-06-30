@@ -1,18 +1,22 @@
 <?php
-
 /**
  * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
  *
  * This module is proprietary software owned by Fexa AI.
+ *
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 namespace PrestaShop\Module\FexaAiConnector\Mcp\Tools;
 
+use Configuration;
+use Exception;
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
-use Configuration;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -52,16 +56,16 @@ class LlmsTxtTools
     {
         $content = trim($this->maybeDecodeBase64($content));
 
-        if ($content === '') {
-            throw new \Exception('content is empty');
+        if ('' === $content) {
+            throw new Exception('content is empty');
         }
         if (strlen($content) > self::MAX_BYTES) {
-            throw new \Exception('content too large (max ' . self::MAX_BYTES . ' bytes)');
+            throw new Exception('content too large (max '.self::MAX_BYTES.' bytes)');
         }
         // Must look like an llms.txt: at least one markdown H1. We never serve
         // arbitrary content at the domain root.
         if (!preg_match('/^#\s+/m', $content)) {
-            throw new \Exception('content must contain a markdown H1 (a line starting with "# ")');
+            throw new Exception('content must contain a markdown H1 (a line starting with "# ")');
         }
 
         $idShop = ((int) $id_shop) ?: null; // null = global (all shops)
@@ -126,9 +130,9 @@ class LlmsTxtTools
     private function maybeDecodeBase64(string $content): string
     {
         $t = trim($content);
-        if ($t !== '' && preg_match('/^[A-Za-z0-9+\/]+={0,2}$/', $t)) {
+        if ('' !== $t && preg_match('/^[A-Za-z0-9+\/]+={0,2}$/', $t)) {
             $decoded = base64_decode($t, true);
-            if ($decoded !== false && $decoded !== '') {
+            if (false !== $decoded && '' !== $decoded) {
                 return $decoded;
             }
         }
@@ -143,11 +147,11 @@ class LlmsTxtTools
     public static function readStored(?int $idShop): ?string
     {
         $raw = Configuration::get(self::KEY, null, null, $idShop);
-        if ($raw === false || $raw === null || $raw === '') {
+        if (false === $raw || null === $raw || '' === $raw) {
             return null;
         }
         $decoded = base64_decode((string) $raw, true);
 
-        return ($decoded !== false && $decoded !== '') ? $decoded : (string) $raw;
+        return (false !== $decoded && '' !== $decoded) ? $decoded : (string) $raw;
     }
 }

@@ -1,16 +1,21 @@
 <?php
-
 /**
- * Copyright (c) 2025 PrestaShop SA
+ * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
  *
- * This module is proprietary software owned by PrestaShop SA. All intellectual property rights, including copyrights, trademarks, and trade secrets, are reserved by PrestaShop SA.
+ * This module is proprietary software owned by Fexa AI.
  *
- * The PS MCP Server module was developed by PrestaShop, which holds all associated intellectual property rights. The license granted to the user does not entail any transfer of rights. The user shall refrain from any act that may infringe upon PrestaShop's rights and undertakes to strictly comply with the limitations of the license set out below. PrestaShop grants the user a personal, non-exclusive, non-transferable, and non-sublicensable license to use the MCP Server module, worldwide and for the entire duration of use of the module. This license is strictly limited to installing the module and using it solely for the operation of the user's PrestaShop store.
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 namespace PrestaShop\Module\FexaAiConnector\Helper;
+
+use Module;
+use ModuleCore;
+use Tools;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -20,12 +25,12 @@ class ModuleHelper
 {
     public function buildModuleInformation(string $technicalName, ?string $nameIfMissing = null): array
     {
-        $baseUrl = \Tools::getShopDomainSsl(true, true);
+        $baseUrl = Tools::getShopDomainSsl(true, true);
 
         return [
             'technicalName' => $technicalName,
-            'name' => $this->isInstalled($technicalName) ? \ModuleCore::getModuleName($technicalName) : ($nameIfMissing ?? 'Unknown Module'),
-            'logo' => $this->isInstalled($technicalName) ? $baseUrl . __PS_BASE_URI__ . 'modules/' . $technicalName . '/logo.png' : $baseUrl . __PS_BASE_URI__ . 'modules/fexa_ai_connector/logo.png',
+            'name' => $this->isInstalled($technicalName) ? ModuleCore::getModuleName($technicalName) : ($nameIfMissing ?? 'Unknown Module'),
+            'logo' => $this->isInstalled($technicalName) ? $baseUrl.__PS_BASE_URI__.'modules/'.$technicalName.'/logo.png' : $baseUrl.__PS_BASE_URI__.'modules/fexa_ai_connector/logo.png',
             'installState' => $this->isInstalled($technicalName)
                 ? ($this->isEnabled($technicalName) ? 'installed' : 'disabled')
                 : 'uninstalled',
@@ -35,12 +40,12 @@ class ModuleHelper
 
     private function isInstalled(string $moduleName)
     {
-        return \ModuleCore::isInstalled($moduleName);
+        return ModuleCore::isInstalled($moduleName);
     }
 
     private function isEnabled(string $moduleName)
     {
-        return \ModuleCore::isEnabled($moduleName);
+        return ModuleCore::isEnabled($moduleName);
     }
 
     private function getModuleVersion(string $moduleName)
@@ -49,7 +54,7 @@ class ModuleHelper
             return '0.0.0';
         }
 
-        $module = \Module::getInstanceByName($moduleName);
+        $module = Module::getInstanceByName($moduleName);
 
         if (false === $module) {
             return '0.0.0';

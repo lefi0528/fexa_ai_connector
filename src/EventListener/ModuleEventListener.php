@@ -1,19 +1,23 @@
 <?php
-
 /**
- * Copyright (c) 2025 PrestaShop SA
+ * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
  *
- * This module is proprietary software owned by PrestaShop SA. All intellectual property rights, including copyrights, trademarks, and trade secrets, are reserved by PrestaShop SA.
+ * This module is proprietary software owned by Fexa AI.
  *
- * The PS MCP Server module was developed by PrestaShop, which holds all associated intellectual property rights. The license granted to the user does not entail any transfer of rights. The user shall refrain from any act that may infringe upon PrestaShop's rights and undertakes to strictly comply with the limitations of the license set out below. PrestaShop grants the user a personal, non-exclusive, non-transferable, and non-sublicensable license to use the MCP Server module, worldwide and for the entire duration of use of the module. This license is strictly limited to installing the module and using it solely for the operation of the user's PrestaShop store.
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 namespace PrestaShop\Module\FexaAiConnector\EventListener;
 
+use Exception;
+use Module;
 use PrestaShop\Module\FexaAiConnector\Services\McpService;
 use PrestaShopBundle\Event\ModuleManagementEvent;
+use PrestaShopException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 if (!defined('_PS_VERSION_')) {
@@ -43,34 +47,34 @@ class ModuleEventListener implements EventSubscriberInterface
     public function storeNewModuleRegistered(ModuleManagementEvent $event): void
     {
         try {
-            $module = \Module::getInstanceByName($event->getModule()->get('name'));
+            $module = Module::getInstanceByName($event->getModule()->get('name'));
 
             if (!$module) {
-                throw new \PrestaShopException('Module not found');
+                throw new PrestaShopException('Module not found');
             }
 
             if (method_exists($module, 'isMcpCompliant') && $module->isMcpCompliant()) {
                 $this->mcpService->storeNewModuleRegistered((int) $module->id);
             }
-        } catch (\Exception $e) {
-            throw new \PrestaShopException('Error while registering module to MCP: ' . $e->getMessage());
+        } catch (Exception $e) {
+            throw new PrestaShopException('Error while registering module to MCP: '.$e->getMessage());
         }
     }
 
     public function removeModuleRegistered(ModuleManagementEvent $event): void
     {
         try {
-            $module = \Module::getInstanceByName($event->getModule()->get('name'));
+            $module = Module::getInstanceByName($event->getModule()->get('name'));
 
             if (!$module) {
-                throw new \PrestaShopException('Module not found');
+                throw new PrestaShopException('Module not found');
             }
 
             if (method_exists($module, 'isMcpCompliant') && $module->isMcpCompliant()) {
                 $this->mcpService->removeModuleRegistered((int) $module->id);
             }
-        } catch (\Exception $e) {
-            throw new \PrestaShopException('Error while removing module from MCP: ' . $e->getMessage());
+        } catch (Exception $e) {
+            throw new PrestaShopException('Error while removing module from MCP: '.$e->getMessage());
         }
     }
 }

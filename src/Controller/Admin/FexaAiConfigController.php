@@ -4,15 +4,16 @@
  *
  * All Rights Reserved.
  *
- * This module is proprietary software owned by Fexa AI. All intellectual property rights, including copyrights, trademarks, and trade secrets, are reserved by Fexa AI.
+ * This module is proprietary software owned by Fexa AI.
+ *
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 namespace PrestaShop\Module\FexaAiConnector\Controller\Admin;
 
-use PrestaShop\Module\FexaAiConnector\Exceptions\ContextException;
-use PrestaShop\Module\FexaAiConnector\Helper\ModuleHelper;
-use PrestaShop\Module\FexaAiConnector\Services\McpService;
-use PrestaShop\Module\FexaAiConnector\Services\McpToolsService;
+use Configuration;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -26,7 +27,7 @@ class FexaAiConfigController extends AbstractFexaAdminController
     {
         return $this->render('@Modules/fexa_ai_connector/views/templates/admin/base.html.twig', [
             'layoutTitle' => 'Fexa AI - MCP Configuration',
-            'mcp_api_key' => \Configuration::get('FEXA_AI_API_KEY'),
+            'mcp_api_key' => Configuration::get('FEXA_AI_API_KEY'),
         ]);
     }
 }

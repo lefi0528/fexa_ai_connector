@@ -1,17 +1,21 @@
 <?php
-
 /**
  * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
  *
- * This module is proprietary software owned by Fexa AI. All intellectual property rights, including copyrights, trademarks, and trade secrets, are reserved by Fexa AI.
+ * This module is proprietary software owned by Fexa AI.
  *
- * This module was developed by Fexa AI.
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 namespace PrestaShop\Module\FexaAiConnector\Services;
 
+use Configuration;
+use Fexa_ai_connector;
+use Module;
 use PhpMcp\Schema\ServerCapabilities;
 use PhpMcp\Server\Server;
 use PrestaShop\Module\FexaAiConnector\Http\HttpConstants;
@@ -22,6 +26,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -29,7 +34,7 @@ if (!defined('_PS_VERSION_')) {
 
 class McpService
 {
-    private const CACHE_FILE_PATH = _PS_MODULE_DIR_ . 'fexa_ai_connector/.mcp/.cache_v2.json';
+    private const CACHE_FILE_PATH = _PS_MODULE_DIR_.'fexa_ai_connector/.mcp/.cache_v2.json';
     private const PAGINATION_LIMIT = 999;
 
     private CacheInterface $cache;
@@ -41,11 +46,11 @@ class McpService
     private bool $forceRegenCache = false;
     private string $serverVersion;
 
-    public function __construct(\Fexa_ai_connector $module, McpToolsService $mcpToolsService, McpModulesRegisteredService $mcpModulesRegisteredService)
+    public function __construct(Fexa_ai_connector $module, McpToolsService $mcpToolsService, McpModulesRegisteredService $mcpModulesRegisteredService)
     {
         $this->serverVersion = $module->version;
 
-        if (!file_exists(self::CACHE_FILE_PATH) || filesize(self::CACHE_FILE_PATH) === 0) {
+        if (!file_exists(self::CACHE_FILE_PATH) || 0 === filesize(self::CACHE_FILE_PATH)) {
             $this->forceRegenCache = true;
         }
 
@@ -76,8 +81,8 @@ class McpService
                 'jsonrpc' => '2.0',
                 'error' => [
                     'code' => -32000,
-                    'message' => 'Le dossier du module n\'est pas inscriptible : ' . $cacheDir
-                        . '. Donnez les droits d\'écriture (chmod 755) à ce dossier puis réessayez.',
+                    'message' => 'Le dossier du module n\'est pas inscriptible : '.$cacheDir
+                        .'. Donnez les droits d\'écriture (chmod 755) à ce dossier puis réessayez.',
                 ],
                 'id' => null,
             ]);
@@ -86,12 +91,12 @@ class McpService
         }
 
         try {
-            if ((bool) \Configuration::get('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER')) {
+            if ((bool) Configuration::get('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER')) {
                 $this->fetchAllModulesCompliantWithMcp();
                 $this->discover();
             }
 
-            if ((bool) \Configuration::get('FEXA_AI_SERVER_STARTED') === false) {
+            if (false === (bool) Configuration::get('FEXA_AI_SERVER_STARTED')) {
                 http_response_code(Response::HTTP_SERVICE_UNAVAILABLE);
                 echo json_encode(['error' => 'MCP server is not running']);
 
@@ -119,7 +124,7 @@ class McpService
 
             $this->server = $serverBuilder->build();
 
-            $hotCachingEnabled = (bool) \Configuration::get('FEXA_AI_SERVER_HOT_CACHING_ENABLED');
+            $hotCachingEnabled = (bool) Configuration::get('FEXA_AI_SERVER_HOT_CACHING_ENABLED');
 
             if ($this->forceRegenCache || $hotCachingEnabled) {
                 $this->logger->info('Cache are regenerated');
@@ -127,7 +132,7 @@ class McpService
             }
 
             $this->server->listen($transport, false);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Never leak a blank 500: return the real reason as a JSON-RPC error so the
             // SaaS connection screen (and our logs) can show exactly what failed on PS 9.x.
             $this->logger->error('MCP request failed', [
@@ -143,7 +148,7 @@ class McpService
                 'jsonrpc' => '2.0',
                 'error' => [
                     'code' => -32000,
-                    'message' => 'Erreur interne du module Fexa AI : ' . $e->getMessage(),
+                    'message' => 'Erreur interne du module Fexa AI : '.$e->getMessage(),
                     'data' => [
                         'file' => basename($e->getFile()),
                         'line' => $e->getLine(),
@@ -161,7 +166,7 @@ class McpService
 
         if (!$module) {
             $this->mcpModulesRegisteredService->addModuleId($moduleId);
-            \Configuration::updateValue('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER', true);
+            Configuration::updateValue('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER', true);
         }
     }
 
@@ -172,7 +177,7 @@ class McpService
         if ($module) {
             $this->mcpModulesRegisteredService->deleteModuleById($moduleId);
             $this->mcpToolsService->deleteAllToolsByModuleId($moduleId);
-            \Configuration::updateValue('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER', true);
+            Configuration::updateValue('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER', true);
         }
     }
 
@@ -183,13 +188,13 @@ class McpService
             return $module['module_id'];
         }, $modulesInDb);
 
-        $modulesInstalled = \Module::getModulesInstalled();
+        $modulesInstalled = Module::getModulesInstalled();
         $modulesInstalledIds = [];
 
         foreach ($modulesInstalled as $moduleInfos) {
-            $module = \Module::getInstanceByName($moduleInfos['name']);
+            $module = Module::getInstanceByName($moduleInfos['name']);
 
-            if (!$module instanceof \Module) {
+            if (!$module instanceof Module) {
                 continue;
             }
 
@@ -246,12 +251,12 @@ class McpService
         $moduleList = [];
 
         foreach ($modulesRegistered as $moduleRegistered) {
-            $moduleList[] = \Module::getInstanceById($moduleRegistered['module_id']);
+            $moduleList[] = Module::getInstanceById($moduleRegistered['module_id']);
         }
 
         $modulesPathUri = array_map(function ($module) {
             if ($module) {
-                return $module->getLocalPath() . 'src';
+                return $module->getLocalPath().'src';
             }
         }, $moduleList);
 
@@ -262,6 +267,6 @@ class McpService
             'modules_count' => count($modulesRegistered),
         ]);
 
-        \Configuration::updateValue('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER', false);
+        Configuration::updateValue('FEXA_AI_SERVER_TOOLS_NEED_DISCOVER', false);
     }
 }

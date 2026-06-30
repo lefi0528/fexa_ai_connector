@@ -1,13 +1,32 @@
 <?php
+/**
+ * Copyright (c) 2025 Fexa AI
+ *
+ * All Rights Reserved.
+ *
+ * This module is proprietary software owned by Fexa AI.
+ *
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
+ */
 
 namespace PrestaShop\Module\FexaAiConnector\Mcp\Tools;
 
+use Category;
+use Combination;
+use Configuration;
+use Context;
+use Currency;
+use Db;
+use Exception;
+use Image;
 use PhpMcp\Server\Attributes\McpTool;
 use PhpMcp\Server\Attributes\Schema;
-use PrestaShop\PrestaShop\Adapter\Entity\Product;
-use Context;
-use Validate;
 use PrestaShop\Module\FexaAiConnector\Helper\HtmlSanitizer;
+use PrestaShop\PrestaShop\Adapter\Entity\Product;
+use StockAvailable;
+use Validate;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -25,7 +44,7 @@ class ProductTools
             'limit' => ['type' => 'integer', 'description' => 'Number of products to return (default 50)'],
             'offset' => ['type' => 'integer', 'description' => 'Offset for pagination (default 0)'],
             'onlyActive' => ['type' => 'boolean', 'description' => 'Filter only active products (default true)'],
-            'idCategoryId' => ['type' => 'integer', 'description' => 'Filter by category ID (optional)']
+            'idCategoryId' => ['type' => 'integer', 'description' => 'Filter by category ID (optional)'],
         ],
         required: []
     )]
@@ -34,45 +53,45 @@ class ProductTools
         $context = Context::getContext();
 
         if (!$context) {
-            throw new \Exception('PrestaShop Context not initialized.');
+            throw new Exception('PrestaShop Context not initialized.');
         }
 
         if (!$langId) {
             if (isset($context->language) && isset($context->language->id)) {
-                $langId = (int)$context->language->id;
+                $langId = (int) $context->language->id;
             } else {
-                $langId = (int)\Configuration::get('PS_LANG_DEFAULT');
+                $langId = (int) Configuration::get('PS_LANG_DEFAULT');
             }
         }
 
         if (empty($langId)) {
-            throw new \Exception('Could not determine Language ID.');
+            throw new Exception('Could not determine Language ID.');
         }
 
-        $idCategory = $idCategoryId ? (int)$idCategoryId : false;
+        $idCategory = $idCategoryId ? (int) $idCategoryId : false;
         $products = \Product::getProducts($langId, $offset, $limit, 'id_product', 'ASC', $idCategory, $onlyActive);
 
         if (!is_array($products)) {
             return [];
         }
 
-        return array_map(function($p) use ($langId, $context) {
-            $images = \Image::getImages($langId, (int)$p['id_product']);
+        return array_map(function ($p) use ($langId, $context) {
+            $images = Image::getImages($langId, (int) $p['id_product']);
             $nbImages = count($images);
             $missingAlt = 0;
             if ($nbImages > 0) {
                 foreach ($images as $img) {
                     if (empty($img['legend']) || $img['legend'] === $p['name']) {
-                        $missingAlt++;
+                        ++$missingAlt;
                     }
                 }
             }
 
             return [
-                'id' => (int)$p['id_product'],
-                'name' => !empty($p['name']) ? $p['name'] : 'Product #' . $p['id_product'],
+                'id' => (int) $p['id_product'],
+                'name' => !empty($p['name']) ? $p['name'] : 'Product #'.$p['id_product'],
                 'reference' => isset($p['reference']) ? $p['reference'] : '',
-                'active' => (bool)$p['active'],
+                'active' => (bool) $p['active'],
                 'category_default' => $p['id_category_default'] ?? null,
                 'nb_images' => $nbImages,
                 'missing_alt' => $missingAlt,
@@ -80,10 +99,10 @@ class ProductTools
                 'description_short' => $p['description_short'] ?? '',
                 'meta_title' => $p['meta_title'] ?? '',
                 'link_rewrite' => $p['link_rewrite'] ?? '',
-                'url' => $context->link->getProductLink((int)$p['id_product'], $p['link_rewrite'] ?? '', $p['id_category_default'] ?? null, null, $langId),
+                'url' => $context->link->getProductLink((int) $p['id_product'], $p['link_rewrite'] ?? '', $p['id_category_default'] ?? null, null, $langId),
                 'manufacturer_name' => $p['manufacturer_name'] ?? '',
-                'price' => isset($p['price']) ? (float)$p['price'] : 0.0,
-                'date_upd' => $p['date_upd'] ?? null
+                'price' => isset($p['price']) ? (float) $p['price'] : 0.0,
+                'date_upd' => $p['date_upd'] ?? null,
             ];
         }, $products);
     }
@@ -103,27 +122,27 @@ class ProductTools
         $context = Context::getContext();
         $idShop = ($context && isset($context->shop) && isset($context->shop->id))
             ? (int) $context->shop->id
-            : (int) \Configuration::get('PS_SHOP_DEFAULT');
+            : (int) Configuration::get('PS_SHOP_DEFAULT');
 
-        $db = \Db::getInstance();
+        $db = Db::getInstance();
         $p = _DB_PREFIX_;
 
         $products = (int) $db->getValue(
-            'SELECT COUNT(DISTINCT p.id_product) FROM `' . $p . 'product` p '
-            . 'INNER JOIN `' . $p . 'product_shop` ps ON ps.id_product = p.id_product AND ps.id_shop = ' . $idShop
-            . ($onlyActive ? ' WHERE ps.active = 1' : '')
+            'SELECT COUNT(DISTINCT p.id_product) FROM `'.$p.'product` p '
+            .'INNER JOIN `'.$p.'product_shop` ps ON ps.id_product = p.id_product AND ps.id_shop = '.$idShop
+            .($onlyActive ? ' WHERE ps.active = 1' : '')
         );
 
         $categories = (int) $db->getValue(
-            'SELECT COUNT(DISTINCT c.id_category) FROM `' . $p . 'category` c '
-            . 'INNER JOIN `' . $p . 'category_shop` cs ON cs.id_category = c.id_category AND cs.id_shop = ' . $idShop
-            . ($onlyActive ? ' WHERE c.active = 1' : '')
+            'SELECT COUNT(DISTINCT c.id_category) FROM `'.$p.'category` c '
+            .'INNER JOIN `'.$p.'category_shop` cs ON cs.id_category = c.id_category AND cs.id_shop = '.$idShop
+            .($onlyActive ? ' WHERE c.active = 1' : '')
         );
 
         $cms = (int) $db->getValue(
-            'SELECT COUNT(DISTINCT m.id_cms) FROM `' . $p . 'cms` m '
-            . 'INNER JOIN `' . $p . 'cms_shop` mshop ON mshop.id_cms = m.id_cms AND mshop.id_shop = ' . $idShop
-            . ($onlyActive ? ' WHERE m.active = 1' : '')
+            'SELECT COUNT(DISTINCT m.id_cms) FROM `'.$p.'cms` m '
+            .'INNER JOIN `'.$p.'cms_shop` mshop ON mshop.id_cms = m.id_cms AND mshop.id_shop = '.$idShop
+            .($onlyActive ? ' WHERE m.active = 1' : '')
         );
 
         return [
@@ -140,19 +159,19 @@ class ProductTools
     #[Schema(
         properties: [
             'id_product' => ['type' => 'integer', 'description' => 'Product ID'],
-            'id_lang' => ['type' => 'integer', 'description' => 'Language ID']
+            'id_lang' => ['type' => 'integer', 'description' => 'Language ID'],
         ],
         required: ['id_product']
     )]
     public function getProductDetails(int $id_product, ?int $id_lang = null): array
     {
         $context = Context::getContext();
-        $idLang = $id_lang ?? (int)$context->language->id;
+        $idLang = $id_lang ?? (int) $context->language->id;
 
         $product = new \Product($id_product, false, $idLang);
 
         if (!Validate::isLoadedObject($product)) {
-            throw new \Exception("Product with ID $id_product not found.");
+            throw new Exception("Product with ID $id_product not found.");
         }
 
         $features = \Product::getFrontFeaturesStatic($idLang, $id_product);
@@ -160,47 +179,47 @@ class ProductTools
         foreach ($features as $f) {
             $formattedFeatures[] = [
                 'name' => $f['name'],
-                'value' => $f['value']
+                'value' => $f['value'],
             ];
         }
 
         $attributes = $product->getAttributesGroups($idLang);
         $formattedCombinations = [];
         foreach ($attributes as $a) {
-            $combId = (int)$a['id_product_attribute'];
+            $combId = (int) $a['id_product_attribute'];
             if (!isset($formattedCombinations[$combId])) {
                 $formattedCombinations[$combId] = [
                     'id' => $combId,
                     'reference' => $a['reference'],
-                    'attributes' => []
+                    'attributes' => [],
                 ];
             }
             $formattedCombinations[$combId]['attributes'][] = [
                 'group' => $a['group_name'],
-                'name' => $a['attribute_name']
+                'name' => $a['attribute_name'],
             ];
         }
 
-        $category = new \Category($product->id_category_default, $idLang);
+        $category = new Category($product->id_category_default, $idLang);
         $categoryName = Validate::isLoadedObject($category) ? $category->name : '';
 
-        $images = \Image::getImages($idLang, $product->id);
+        $images = Image::getImages($idLang, $product->id);
         $formattedImages = [];
         if (is_array($images)) {
             foreach ($images as $img) {
                 $imageUrl = $context->link->getImageLink($product->link_rewrite[$idLang] ?? $product->name[$idLang], $img['id_image']);
                 $formattedImages[] = [
                     'id' => $img['id_image'],
-                    'cover' => (bool)$img['cover'],
+                    'cover' => (bool) $img['cover'],
                     'legend' => $img['legend'],
                     'position' => $img['position'],
-                    'url' => strpos($imageUrl, 'http') === 0 ? $imageUrl : 'http://' . $imageUrl
+                    'url' => 0 === strpos($imageUrl, 'http') ? $imageUrl : 'http://'.$imageUrl,
                 ];
             }
         }
 
         // --- Product schema enrichment: identifiers, stock, currency ---
-        $quantity = (int) \StockAvailable::getQuantityAvailableByProduct((int) $product->id);
+        $quantity = (int) StockAvailable::getQuantityAvailableByProduct((int) $product->id);
         $availableForOrder = (bool) $product->available_for_order;
         $availability = ($quantity > 0 && $availableForOrder)
             ? 'https://schema.org/InStock'
@@ -208,18 +227,18 @@ class ProductTools
 
         $currencyIso = '';
         try {
-            $defaultCurrency = \Currency::getDefaultCurrency();
+            $defaultCurrency = Currency::getDefaultCurrency();
             if ($defaultCurrency && isset($defaultCurrency->iso_code)) {
                 $currencyIso = (string) $defaultCurrency->iso_code;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // leave empty — caller omits offers without a currency
         }
 
         $priceTaxIncl = (float) $product->price;
         try {
             $priceTaxIncl = (float) \Product::getPriceStatic((int) $product->id, true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // fall back to the base price already assigned
         }
 
@@ -236,15 +255,15 @@ class ProductTools
         // combination's gtin in its Product schema.
         $resolvedEan13 = (string) $product->ean13;
         $resolvedUpc = (string) $product->upc;
-        if ($resolvedEan13 === '' || $resolvedUpc === '') {
+        if ('' === $resolvedEan13 || '' === $resolvedUpc) {
             $defaultCombo = (int) Product::getDefaultAttribute((int) $product->id);
             if ($defaultCombo > 0) {
-                $combo = new \Combination($defaultCombo);
+                $combo = new Combination($defaultCombo);
                 if (Validate::isLoadedObject($combo)) {
-                    if ($resolvedEan13 === '' && !empty($combo->ean13)) {
+                    if ('' === $resolvedEan13 && !empty($combo->ean13)) {
                         $resolvedEan13 = (string) $combo->ean13;
                     }
-                    if ($resolvedUpc === '' && !empty($combo->upc)) {
+                    if ('' === $resolvedUpc && !empty($combo->upc)) {
                         $resolvedUpc = (string) $combo->upc;
                     }
                 }
@@ -261,19 +280,19 @@ class ProductTools
             'link_rewrite' => $product->link_rewrite,
             'url' => $context->link->getProductLink($product, null, null, null, $idLang),
             'reference' => $product->reference,
-            'active' => (bool)$product->active,
+            'active' => (bool) $product->active,
             'manufacturer_name' => $product->manufacturer_name ?: '',
             'category_name' => $categoryName,
             'features' => $formattedFeatures,
             'combinations' => array_values($formattedCombinations),
             'nb_images' => count($formattedImages),
             'associations' => [
-                'images' => $formattedImages
+                'images' => $formattedImages,
             ],
-            'price_tax_excl' => (float)$product->price,
+            'price_tax_excl' => (float) $product->price,
             'price_tax_incl' => $priceTaxIncl,
             'currency' => $currencyIso,
-            'on_sale' => (bool)$product->on_sale,
+            'on_sale' => (bool) $product->on_sale,
             'ean13' => $resolvedEan13,
             'isbn' => (string) $product->isbn,
             'upc' => $resolvedUpc,
@@ -294,7 +313,7 @@ class ProductTools
     {
         $trail = [];
         try {
-            $cat = new \Category($idCategory, $idLang);
+            $cat = new Category($idCategory, $idLang);
             if (!Validate::isLoadedObject($cat)) {
                 return $trail;
             }
@@ -308,7 +327,7 @@ class ProductTools
                     continue; // skip the technical root category
                 }
                 $name = isset($p['name']) ? (string) $p['name'] : '';
-                if ($name === '') {
+                if ('' === $name) {
                     continue;
                 }
                 $trail[] = [
@@ -316,7 +335,7 @@ class ProductTools
                     'url' => $context->link->getCategoryLink($idc, isset($p['link_rewrite']) ? $p['link_rewrite'] : null, $idLang),
                 ];
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // best-effort
         }
 
@@ -353,22 +372,22 @@ class ProductTools
         ?string $meta_description = null
     ): array {
         $context = Context::getContext();
-        $id_lang = $id_lang ?? (int)$context->language->id;
+        $id_lang = $id_lang ?? (int) $context->language->id;
 
         if (!$id_lang) {
-            $id_lang = (int)\Configuration::get('PS_LANG_DEFAULT');
+            $id_lang = (int) Configuration::get('PS_LANG_DEFAULT');
         }
 
         $product = new \Product($id_product);
 
         if (!Validate::isLoadedObject($product)) {
-            throw new \Exception("Product with ID $id_product not found.");
+            throw new Exception("Product with ID $id_product not found.");
         }
 
         $fieldsUpdated = [];
 
-        $updateField = function(&$fieldArray, $newValue, $fieldName) use ($id_lang, &$fieldsUpdated) {
-            if ($newValue !== null) {
+        $updateField = function (&$fieldArray, $newValue, $fieldName) use ($id_lang, &$fieldsUpdated) {
+            if (null !== $newValue) {
                 if (!is_array($fieldArray)) {
                     $fieldArray = [$id_lang => $fieldArray];
                 }
@@ -378,25 +397,35 @@ class ProductTools
         };
 
         // Defense in depth: clean AI content before it reaches the shop.
-        if ($name !== null) $name = HtmlSanitizer::catalogName($name, 128);
-        if ($description_short !== null) $description_short = HtmlSanitizer::richHtml($description_short);
-        if ($description !== null) $description = HtmlSanitizer::richHtml($description);
-        if ($meta_title !== null) $meta_title = HtmlSanitizer::meta($meta_title, 255);
-        if ($meta_description !== null) $meta_description = HtmlSanitizer::meta($meta_description, 512);
+        if (null !== $name) {
+            $name = HtmlSanitizer::catalogName($name, 128);
+        }
+        if (null !== $description_short) {
+            $description_short = HtmlSanitizer::richHtml($description_short);
+        }
+        if (null !== $description) {
+            $description = HtmlSanitizer::richHtml($description);
+        }
+        if (null !== $meta_title) {
+            $meta_title = HtmlSanitizer::meta($meta_title, 255);
+        }
+        if (null !== $meta_description) {
+            $meta_description = HtmlSanitizer::meta($meta_description, 512);
+        }
 
         // URL slug: explicit value wins; otherwise derive from the (translated) name.
         // Skip writing an empty slug (e.g. fully non-latin input) to avoid breaking URLs.
         $slug = null;
-        if ($link_rewrite !== null && trim($link_rewrite) !== '') {
+        if (null !== $link_rewrite && '' !== trim($link_rewrite)) {
             $slug = HtmlSanitizer::slug($link_rewrite);
-        } elseif ($name !== null && $name !== '') {
+        } elseif (null !== $name && '' !== $name) {
             $slug = HtmlSanitizer::slug($name);
         }
-        if ($slug === '' || !$update_slug) {
+        if ('' === $slug || !$update_slug) {
             $slug = null; // keep existing slug (empty/non-latin, or caller opted out)
         }
 
-        $updateField($product->name, ($name !== null && $name !== '') ? $name : null, 'name');
+        $updateField($product->name, (null !== $name && '' !== $name) ? $name : null, 'name');
         $updateField($product->link_rewrite, $slug, 'link_rewrite');
         $updateField($product->description_short, $description_short, 'description_short');
         $updateField($product->description, $description, 'description');
@@ -408,14 +437,14 @@ class ProductTools
         }
 
         if (!$product->save()) {
-            throw new \Exception("Failed to save product ID $id_product");
+            throw new Exception("Failed to save product ID $id_product");
         }
 
         return [
             'status' => 'success',
             'product_id' => $id_product,
             'lang_id' => $id_lang,
-            'updated_fields' => $fieldsUpdated
+            'updated_fields' => $fieldsUpdated,
         ];
     }
 
@@ -427,22 +456,22 @@ class ProductTools
         properties: [
             'id_image' => ['type' => 'integer', 'description' => 'Image ID'],
             'legend' => ['type' => 'string', 'description' => 'New ALT text (legend)'],
-            'id_lang' => ['type' => 'integer', 'description' => 'Language ID (optional, defaults to context language)']
+            'id_lang' => ['type' => 'integer', 'description' => 'Language ID (optional, defaults to context language)'],
         ],
         required: ['id_image', 'legend']
     )]
     public function updateImageAlt(int $id_image, string $legend, ?int $id_lang = null): array
     {
         $context = Context::getContext();
-        $id_lang = $id_lang ?? (int)$context->language->id;
+        $id_lang = $id_lang ?? (int) $context->language->id;
 
         if (!$id_lang) {
-            $id_lang = (int)\Configuration::get('PS_LANG_DEFAULT');
+            $id_lang = (int) Configuration::get('PS_LANG_DEFAULT');
         }
 
-        $image = new \Image($id_image);
+        $image = new Image($id_image);
         if (!Validate::isLoadedObject($image)) {
-            throw new \Exception("Image with ID $id_image not found.");
+            throw new Exception("Image with ID $id_image not found.");
         }
 
         if (!is_array($image->legend)) {
@@ -452,14 +481,14 @@ class ProductTools
         }
 
         if (!$image->save()) {
-            throw new \Exception("Failed to save image legend for ID $id_image");
+            throw new Exception("Failed to save image legend for ID $id_image");
         }
 
         return [
             'status' => 'success',
             'id_image' => $id_image,
             'id_lang' => $id_lang,
-            'legend' => $legend
+            'legend' => $legend,
         ];
     }
 }

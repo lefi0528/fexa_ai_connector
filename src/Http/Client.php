@@ -1,14 +1,21 @@
 <?php
-
 /**
  * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
  *
- * This module is proprietary software owned by Fexa AI. All intellectual property rights, including copyrights, trademarks, and trade secrets, are reserved by Fexa AI.
+ * This module is proprietary software owned by Fexa AI.
+ *
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 namespace PrestaShop\Module\FexaAiConnector\Http;
+
+use CURLFile;
+use CurlHandle;
+use PrestaShopException;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -36,7 +43,7 @@ class Client
 
     private array $headers = [];
 
-    public \CurlHandle $curl;
+    public CurlHandle $curl;
 
     public $error = false;
 
@@ -75,12 +82,12 @@ class Client
 
     public function __wakeup()
     {
-        throw new \PrestaShopException('Cannot unserialize a singleton.');
+        throw new PrestaShopException('Cannot unserialize a singleton.');
     }
 
     public static function getInstance()
     {
-        if (self::$instance === null) {
+        if (null === self::$instance) {
             self::$instance = new self();
         } else {
             self::$instance->reset();
@@ -124,9 +131,9 @@ class Client
     {
         $trimmed_header = trim($header_line, "\r\n");
 
-        if ($trimmed_header === '') {
+        if ('' === $trimmed_header) {
             $this->responseHeaderContinue = false;
-        } elseif (strtolower($trimmed_header) === 'http/1.1 100 continue') {
+        } elseif ('http/1.1 100 continue' === strtolower($trimmed_header)) {
             $this->responseHeaderContinue = true;
         } elseif (!$this->responseHeaderContinue) {
             $this->responseHeaders[] = $trimmed_header;
@@ -141,7 +148,7 @@ class Client
         $this->response = curl_exec($this->curl);
         $this->curlErrorCode = curl_errno($this->curl);
         $this->curlErrorMessage = curl_error($this->curl);
-        $this->curlError = $this->getErrorCode() !== 0;
+        $this->curlError = 0 !== $this->getErrorCode();
         $this->httpStatusCode = (int) curl_getinfo($this->curl, CURLINFO_HTTP_CODE);
         $this->httpError = $this->isError();
         $this->error = $this->curlError || $this->httpError;
@@ -165,7 +172,7 @@ class Client
         if (is_array($data) || is_object($data)) {
             $skip = false;
             foreach ($data as $value) {
-                if ($value instanceof \CURLFile) {
+                if ($value instanceof CURLFile) {
                     $skip = true;
                 }
             }
@@ -194,7 +201,7 @@ class Client
         $this->setHeaders($headers);
 
         if (!is_null($data) && is_array($data) && count($data) > 0) {
-            $this->setOpt(CURLOPT_URL, $url . '?' . http_build_query($data));
+            $this->setOpt(CURLOPT_URL, $url.'?'.http_build_query($data));
         } else {
             $this->setOpt(CURLOPT_URL, $url);
         }
@@ -220,7 +227,7 @@ class Client
             rewind($temp);
 
             $tempPath = stream_get_meta_data($temp)['uri'];
-            $payload = ['file' => new \CURLFile($tempPath, 'text/plain', 'file')];
+            $payload = ['file' => new CURLFile($tempPath, 'text/plain', 'file')];
             $this->preparePayload($payload);
         } else {
             $this->prepareJsonPayload($data);
@@ -246,8 +253,8 @@ class Client
         }
 
         if (!empty($data)) {
-            if ($payload === false) {
-                $url .= '?' . http_build_query($data);
+            if (false === $payload) {
+                $url .= '?'.http_build_query($data);
             } else {
                 $this->preparePayload($data);
             }
@@ -271,8 +278,8 @@ class Client
         }
 
         if (!empty($data)) {
-            if ($payload === false) {
-                $url .= '?' . http_build_query($data);
+            if (false === $payload) {
+                $url .= '?'.http_build_query($data);
             } else {
                 $this->preparePayload($data);
             }
@@ -296,8 +303,8 @@ class Client
         }
 
         if (!empty($data)) {
-            if ($payload === false) {
-                $url .= '?' . http_build_query($data);
+            if (false === $payload) {
+                $url .= '?'.http_build_query($data);
             } else {
                 $this->preparePayload($data);
             }
@@ -313,7 +320,7 @@ class Client
     public function setBasicAuthentication($username, $password)
     {
         $this->setHttpAuth(self::AUTH_BASIC);
-        $this->setOpt(CURLOPT_USERPWD, $username . ':' . $password);
+        $this->setOpt(CURLOPT_USERPWD, $username.':'.$password);
 
         return $this;
     }
@@ -322,7 +329,7 @@ class Client
     {
         if (!empty($headers)) {
             foreach ($headers as $key => $value) {
-                $this->headers[$key] = $key . ': ' . $value;
+                $this->headers[$key] = $key.': '.$value;
                 $this->setOpt(CURLOPT_HTTPHEADER, array_values($this->headers));
             }
         }

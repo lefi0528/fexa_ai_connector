@@ -1,12 +1,20 @@
 <?php
-
 /**
  * Copyright (c) 2025 Fexa AI
  *
  * All Rights Reserved.
+ *
+ * This module is proprietary software owned by Fexa AI.
+ *
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 namespace PrestaShop\Module\FexaAiConnector\Helper;
+
+use Tools;
+use Validate;
 
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -24,11 +32,11 @@ class HtmlSanitizer
     /** Sanitise rich HTML (description / content) — strips scripts/styles, balances tags. */
     public static function richHtml(string $html): string
     {
-        if (trim($html) === '') {
+        if ('' === trim($html)) {
             return '';
         }
 
-        return trim((string) \Tools::purifyHTML($html));
+        return trim((string) Tools::purifyHTML($html));
     }
 
     /** Plain text + length cap for meta / short fields (HTML in meta breaks save()). */
@@ -64,8 +72,8 @@ class HtmlSanitizer
      */
     public static function slug(string $text): string
     {
-        $slug = (string) \Tools::str2url($text);
+        $slug = (string) Tools::str2url($text);
 
-        return \Validate::isLinkRewrite($slug) ? $slug : '';
+        return Validate::isLinkRewrite($slug) ? $slug : '';
     }
 }

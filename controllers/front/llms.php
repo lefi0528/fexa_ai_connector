@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Copyright (c) 2025 Fexa AI
  *
@@ -7,10 +6,9 @@
  *
  * This module is proprietary software owned by Fexa AI.
  *
- * Serves the shop's /llms.txt at the domain root from the FEXA_AI_LLMS_TXT
- * Configuration value (stored by the set_llms_txt MCP tool). READ-ONLY: it only
- * reads Configuration and echoes it — it never writes anything and never affects
- * any other page. No content stored → 404.
+ * @author    Fexa AI <support@fexaai.com>
+ * @copyright 2025 Fexa AI
+ * @license   Proprietary
  */
 
 if (!defined('_PS_VERSION_')) {
@@ -31,15 +29,15 @@ class Fexa_ai_connectorLlmsModuleFrontController extends ModuleFrontController
         // decode it; a legacy raw value (not base64) is served as-is.
         $raw = Configuration::get('FEXA_AI_LLMS_TXT');
         $content = false;
-        if ($raw !== false && $raw !== null && $raw !== '') {
+        if (false !== $raw && null !== $raw && '' !== $raw) {
             $decoded = base64_decode((string) $raw, true);
-            $content = ($decoded !== false && $decoded !== '') ? $decoded : (string) $raw;
+            $content = (false !== $decoded && '' !== $decoded) ? $decoded : (string) $raw;
         }
 
         header('Content-Type: text/plain; charset=utf-8');
         header('X-Robots-Tag: noindex');
 
-        if ($content === false || $content === null || $content === '') {
+        if (false === $content || null === $content || '' === $content) {
             header('HTTP/1.1 404 Not Found');
             exit;
         }
