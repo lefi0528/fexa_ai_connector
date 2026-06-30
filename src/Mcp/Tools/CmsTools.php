@@ -24,6 +24,14 @@ if (!defined('_PS_VERSION_')) {
 
 class CmsTools
 {
+    /** Injected PrestaShop shop context (provided by FexaToolContainer); untyped on purpose. */
+    private $context;
+
+    public function __construct($context = null)
+    {
+        $this->context = $context;
+    }
+
     #[McpTool(
         name: 'list_cms',
         description: 'List CMS pages. Returns ID, Meta Title, Link Rewrite, Active status.'
@@ -38,7 +46,7 @@ class CmsTools
     )]
     public function listCms(?int $langId = null, int $limit = 100, int $offset = 0): array
     {
-        $context = \Context::getContext();
+        $context = $this->context;
         $idLang = $langId ?? $context->language->id;
 
         if (!$idLang) {
@@ -78,7 +86,7 @@ class CmsTools
     )]
     public function getCmsDetails(int $id_cms, ?int $id_lang = null): array
     {
-        $context = \Context::getContext();
+        $context = $this->context;
         $idLang = $id_lang ?? $context->language->id;
 
         $cms = new \CMS($id_cms, $idLang);
@@ -125,7 +133,7 @@ class CmsTools
         ?string $link_rewrite = null,
         bool $update_slug = true,
     ): array {
-        $context = \Context::getContext();
+        $context = $this->context;
         $id_lang = $id_lang ?? (int) $context->language->id;
 
         if (!$id_lang) {

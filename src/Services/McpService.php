@@ -19,6 +19,7 @@ use PhpMcp\Server\Server;
 use PrestaShop\Module\FexaAiConnector\Http\HttpConstants;
 use PrestaShop\Module\FexaAiConnector\Server\CustomDiscoverer;
 use PrestaShop\Module\FexaAiConnector\Server\CustomFileCache;
+use PrestaShop\Module\FexaAiConnector\Server\FexaToolContainer;
 use PrestaShop\Module\FexaAiConnector\Server\InMemoryTransport;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -62,7 +63,12 @@ class McpService
         $this->mcpModulesRegisteredService = $mcpModulesRegisteredService;
     }
 
-    public function executeHttpMcpRequest(): void
+    /**
+     * @param mixed $psContext the live PrestaShop context, passed in by the front
+     *                         controller (McpServer) so the tool handlers can be
+     *                         injected with it instead of reaching for a global accessor
+     */
+    public function executeHttpMcpRequest($psContext = null): void
     {
         header(HttpConstants::JSON_CONTENT_TYPE_HEADER);
 
@@ -100,7 +106,7 @@ class McpService
                 return;
             }
 
-            $transport = new InMemoryTransport();
+            $transport = new InMemoryTransport($psContext);
             $serverBuilder = Server::make()
                 ->withCapabilities(ServerCapabilities::make(
                     resources: false,
@@ -118,6 +124,11 @@ class McpService
                 ->withPaginationLimit(self::PAGINATION_LIMIT);
 
             $serverBuilder->withLogger($this->logger);
+
+            // Inject the live shop context into the tool handlers. php-mcp instantiates
+            // each handler via this container (RegisteredElement::handle -> container->get),
+            // so the tools receive the context here instead of calling a global accessor.
+            $serverBuilder->withContainer(new FexaToolContainer($psContext));
 
             $this->server = $serverBuilder->build();
 

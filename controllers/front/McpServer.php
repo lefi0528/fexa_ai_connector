@@ -91,6 +91,8 @@ class Fexa_ai_connectorMcpServerModuleFrontController extends ModuleFrontControl
             exit;
         }
 
-        $mcpService->executeHttpMcpRequest();
+        // Pass the front controller's context (framework-populated, no global accessor)
+        // so the MCP tool handlers can be injected with it via FexaToolContainer.
+        $mcpService->executeHttpMcpRequest($this->context);
     }
 }

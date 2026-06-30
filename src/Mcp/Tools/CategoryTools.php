@@ -24,6 +24,14 @@ if (!defined('_PS_VERSION_')) {
 
 class CategoryTools
 {
+    /** Injected PrestaShop shop context (provided by FexaToolContainer); untyped on purpose. */
+    private $context;
+
+    public function __construct($context = null)
+    {
+        $this->context = $context;
+    }
+
     #[McpTool(
         name: 'list_categories',
         description: 'List all categories (full tree, all depths). Returns ID, Name, productCount and Active status.'
@@ -38,7 +46,7 @@ class CategoryTools
     )]
     public function listCategories(?int $langId = null, int $limit = 200, int $offset = 0): array
     {
-        $context = \Context::getContext();
+        $context = $this->context;
 
         if (!$context) {
             throw new \Exception('PrestaShop Context not initialized.');
@@ -99,7 +107,7 @@ class CategoryTools
     )]
     public function getCategoryDetails(int $id_category, ?int $id_lang = null): array
     {
-        $context = \Context::getContext();
+        $context = $this->context;
         $idLang = $id_lang ?? $context->language->id;
 
         $category = new \Category($id_category, $idLang);
@@ -189,7 +197,7 @@ class CategoryTools
         ?string $meta_title = null,
         ?string $meta_description = null,
     ): array {
-        $context = \Context::getContext();
+        $context = $this->context;
         $id_lang = $id_lang ?? (int) $context->language->id;
 
         if (!$id_lang) {

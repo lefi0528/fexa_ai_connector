@@ -39,13 +39,15 @@ class InMemoryTransport implements ServerTransportInterface, LoggerAwareInterfac
     private bool $useSSE = false;
     private string $sessionId = '';
 
-    public function __construct()
+    /**
+     * @param mixed $shopContext the live PrestaShop context, injected from the front
+     *                           controller; the transport only asserts it is present
+     */
+    public function __construct($shopContext = null)
     {
         $this->logger = new NullLogger();
 
-        $context = \Context::getContext();
-
-        if (null === $context) {
+        if (null === $shopContext) {
             throw new \PrestaShopException('Context is not defined');
         }
     }

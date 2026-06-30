@@ -27,6 +27,14 @@ if (!defined('_PS_VERSION_')) {
 
 class ProductTools
 {
+    /** Injected PrestaShop shop context (provided by FexaToolContainer); untyped on purpose. */
+    private $context;
+
+    public function __construct($context = null)
+    {
+        $this->context = $context;
+    }
+
     #[McpTool(
         name: 'list_products',
         description: 'List products from the shop with pagination. Returns basic details (ID, Reference, Name, Active status).'
@@ -43,7 +51,7 @@ class ProductTools
     )]
     public function listProducts(?int $langId = null, int $limit = 50, int $offset = 0, bool $onlyActive = true, ?int $idCategoryId = null): array
     {
-        $context = \Context::getContext();
+        $context = $this->context;
 
         if (!$context) {
             throw new \Exception('PrestaShop Context not initialized.');
@@ -112,7 +120,7 @@ class ProductTools
     )]
     public function countCatalog(bool $onlyActive = true): array
     {
-        $context = \Context::getContext();
+        $context = $this->context;
         $idShop = ($context && isset($context->shop) && isset($context->shop->id))
             ? (int) $context->shop->id
             : (int) \Configuration::get('PS_SHOP_DEFAULT');
@@ -158,7 +166,7 @@ class ProductTools
     )]
     public function getProductDetails(int $id_product, ?int $id_lang = null): array
     {
-        $context = \Context::getContext();
+        $context = $this->context;
         $idLang = $id_lang ?? (int) $context->language->id;
 
         $product = new \Product($id_product, false, $idLang);
@@ -364,7 +372,7 @@ class ProductTools
         ?string $meta_title = null,
         ?string $meta_description = null,
     ): array {
-        $context = \Context::getContext();
+        $context = $this->context;
         $id_lang = $id_lang ?? (int) $context->language->id;
 
         if (!$id_lang) {
@@ -455,7 +463,7 @@ class ProductTools
     )]
     public function updateImageAlt(int $id_image, string $legend, ?int $id_lang = null): array
     {
-        $context = \Context::getContext();
+        $context = $this->context;
         $id_lang = $id_lang ?? (int) $context->language->id;
 
         if (!$id_lang) {

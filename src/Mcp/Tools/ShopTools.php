@@ -22,6 +22,14 @@ if (!defined('_PS_VERSION_')) {
 
 class ShopTools
 {
+    /** Injected PrestaShop shop context (provided by FexaToolContainer); untyped on purpose. */
+    private $context;
+
+    public function __construct($context = null)
+    {
+        $this->context = $context;
+    }
+
     #[McpTool(
         name: 'list_languages',
         description: 'Get list of active languages in the shop.'
@@ -32,7 +40,7 @@ class ShopTools
     )]
     public function listLanguages(): array
     {
-        $languages = \Language::getLanguages(true, \Context::getContext()->shop->id);
+        $languages = \Language::getLanguages(true, $this->context->shop->id);
 
         return array_map(function ($l) {
             return [
