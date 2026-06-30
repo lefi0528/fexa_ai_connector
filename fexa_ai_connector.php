@@ -178,7 +178,7 @@ class Fexa_ai_connector extends Module
     public function getContent()
     {
         // Rendered as legacy module content (no Symfony admin controller): works
-        // identically on PrestaShop 1.7.8 / 8 / 9. PS 9 removed the controller base
+        // identically on PrestaShop 8 / 9. PS 9 removed the controller base
         // class infrastructure used previously, which threw "has no container set".
         // Handle the structured-data toggle form (saved before rendering the page).
         $schemaSaved = false;

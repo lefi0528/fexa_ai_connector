@@ -34,7 +34,7 @@ Connect your store in one click and let AI automatically improve your SEO, struc
 
 ## ✅ Compatibility
 
-- **PrestaShop 1.7.8, 8.x and 9.x**
+- **PrestaShop 8.1+ and 9.x**
 - **PHP 8.1+**
 
 ## Installation
@@ -47,7 +47,7 @@ Connect your store in one click and let AI automatically improve your SEO, struc
 
 ## Requirements
 
-- PrestaShop >= 1.7.8
+- PrestaShop >= 8.1
 - PHP >= 8.1
 
 ## Links
