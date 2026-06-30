@@ -505,7 +505,7 @@ HTML;
         }
         list($key, $default) = $map[$schemaType];
         $val = Configuration::get($key);
-        if (false === $val || null === $val || '' === $val) {
+        if ('' === (string) $val) {
             return '1' === $default;
         }
 

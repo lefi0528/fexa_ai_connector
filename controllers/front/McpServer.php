@@ -18,6 +18,7 @@ if (!defined('_PS_VERSION_')) {
 
 class Fexa_ai_connectorMcpServerModuleFrontController extends ModuleFrontController
 {
+    /** @var Fexa_ai_connector */
     public $module;
 
     public function initContent(): void

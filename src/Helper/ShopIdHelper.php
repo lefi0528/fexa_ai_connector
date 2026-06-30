@@ -27,6 +27,8 @@ class ShopIdHelper
             return null;
         }
 
+        // getService() is provided by the ps_accounts module's service container, not core Module.
+        // @phpstan-ignore-next-line
         $accountService = $accountModule->getService('PrestaShop\Module\PsAccounts\Service\PsAccountsService');
 
         if (!$accountService || !is_object($accountService) || !method_exists($accountService, 'getShopUuidV4')) {

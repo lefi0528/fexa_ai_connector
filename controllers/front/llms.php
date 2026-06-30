@@ -36,7 +36,7 @@ class Fexa_ai_connectorLlmsModuleFrontController extends ModuleFrontController
         header('Content-Type: text/plain; charset=utf-8');
         header('X-Robots-Tag: noindex');
 
-        if (false === $content || null === $content || '' === $content) {
+        if ('' === (string) $content) {
             header('HTTP/1.1 404 Not Found');
             exit;
         }

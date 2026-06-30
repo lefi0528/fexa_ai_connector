@@ -146,7 +146,7 @@ class LlmsTxtTools
     public static function readStored(?int $idShop): ?string
     {
         $raw = \Configuration::get(self::KEY, null, null, $idShop);
-        if (false === $raw || null === $raw || '' === $raw) {
+        if ('' === (string) $raw) {
             return null;
         }
         $decoded = base64_decode((string) $raw, true);
