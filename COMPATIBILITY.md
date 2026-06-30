@@ -18,11 +18,12 @@
    (débloque l'installation sur PrestaShop 1.7.8).
 2. `composer.json` — `config.platform.php` : `7.4` → **`8.1`** (cohérent avec `require: php >=8.1`) ;
    `version` : `3.2.8` → **`3.3.0`** (aligné sur `config.xml` et le module).
-3. `src/Controller/Admin/AbstractFexaAdminController.php` (**nouveau**) — classe de base admin
-   transverse : utilise `PrestaShopAdminController` (PS 9) ou `FrameworkBundleAdminController`
-   (1.7.8 / 8) selon ce qui existe. PS 9 a supprimé `FrameworkBundleAdminController`.
-4. `src/Controller/Admin/FexaAiConfigController.php` — `extends AbstractFexaAdminController`
-   au lieu de `FrameworkBundleAdminController` (était un fatal sur PS 9).
+3. **Page de config admin via `Module::getContent()`** (plus de contrôleur Symfony admin) — le
+   contrôleur `FexaAiConfigController`, la classe de base `AbstractFexaAdminController` et la route
+   Symfony associée ont été **supprimés**. La config (clé API + données structurées) est désormais
+   rendue par `getContent()` via un template Smarty (`views/templates/admin/configure.tpl`). Cela
+   fonctionne à l'identique sur 1.7.8 / 8 / 9 sans dépendre de `FrameworkBundleAdminController`
+   (supprimé en PS 9) ni de `PrestaShopAdminController`.
 
 > Le **cœur MCP** (front controller `McpServer` + `php-mcp/server`) ne dépend d'aucune classe admin :
 > il fonctionne sur 1.7.8 / 8 / 9 dès lors que PHP est en 8.1+.
@@ -31,7 +32,7 @@
 
 ### PrestaShop 1.7.8 (PHP 8.1)
 - [ ] Installation du module sans erreur (plus de blocage « incompatible »).
-- [ ] La page de config admin s'affiche et montre la clé API (`AdminFexaAiConfig`).
+- [ ] La page de config admin (`getContent`, rendu Smarty) s'affiche et montre la clé API + les cases « données structurées ».
 - [ ] L'URL MCP répond : `POST /index.php?fc=module&module=fexa_ai_connector&controller=McpServer`
       avec `Authorization: Bearer <FEXA_AI_API_KEY>` → `tools/list` renvoie les 11 outils.
 - [ ] Un scan complet depuis le SaaS lit produits/catégories/CMS.
@@ -41,9 +42,8 @@
 - [ ] Tout ce qui précède fonctionne toujours (comportement inchangé attendu).
 
 ### PrestaShop 9.x (PHP 8.1) — **à confirmer**
-- [ ] Installation + page de config admin (vérifie le shim `PrestaShopAdminController`).
-      Si la page admin échoue : `PrestaShopAdminController` peut exiger une injection de services
-      au constructeur → adapter la déclaration de service du contrôleur (autowire).
+- [ ] Installation + page de config admin (`getContent`, rendu Smarty — aucun contrôleur Symfony
+      admin, donc plus de dépendance à `PrestaShopAdminController`).
 - [ ] **`src/EventListener/ModuleEventListener.php`** : vérifier que
       `PrestaShopBundle\Event\ModuleManagementEvent` existe toujours en PS 9. S'il a été
       déplacé/renommé, garder l'auto-enregistrement des modules MCP tiers derrière un

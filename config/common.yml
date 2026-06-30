@@ -40,12 +40,6 @@ services:
     arguments:
       - '@fexa_ai_connector.repository.modules'
 
-  ## ADMIN ##
-  PrestaShop\Module\FexaAiConnector\Controller\Admin\FexaAiConfigController:
-    class: PrestaShop\Module\FexaAiConnector\Controller\Admin\FexaAiConfigController
-    public: true
-    tags: ['controller.service_arguments']
-
   PrestaShop\Module\FexaAiConnector\EventListener\ModuleEventListener:
     tags:
       - { name: 'kernel.event_subscriber' }

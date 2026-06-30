@@ -188,99 +188,38 @@ class Fexa_ai_connector extends Module
             Configuration::updateValue('FEXA_AI_EMIT_BREADCRUMB', Tools::getValue('emit_breadcrumb') ? '1' : '0');
             $schemaSaved = true;
         }
-        $emitFaqChk = $this->isSchemaEnabled('FAQPage') ? 'checked' : '';
-        $emitProductChk = $this->isSchemaEnabled('Product') ? 'checked' : '';
-        $emitBreadcrumbChk = $this->isSchemaEnabled('BreadcrumbList') ? 'checked' : '';
+        $this->context->smarty->assign([
+            'fexa_intro' => $this->l('Optimisez automatiquement votre boutique pour le SEO ET la recherche vocale (Google Assistant, Alexa, Siri) grâce à l\'IA : descriptions, méta, balises ALT, données structurées et fichier /llms.txt prêts pour les moteurs de réponse.'),
+            'fexa_access' => $this->l('Accéder à Fexa AI'),
+            'fexa_feat_title' => $this->l('Ce que Fexa AI optimise pour vous'),
+            'fexa_f1t' => $this->l('Recherche vocale (AEO)'),
+            'fexa_f1d' => $this->l('Balisage Speakable + FAQ pour être lu à voix haute par les assistants vocaux.'),
+            'fexa_f2t' => $this->l('Données structurées'),
+            'fexa_f2d' => $this->l('JSON-LD Produit, FAQ et fil d\'Ariane injectés automatiquement (rich snippets Google).'),
+            'fexa_f3t' => $this->l('SEO automatisé par IA'),
+            'fexa_f3d' => $this->l('Titres, méta-descriptions, descriptions et balises ALT réécrits et optimisés.'),
+            'fexa_f4t' => $this->l('Moteurs de réponse IA'),
+            'fexa_f4d' => $this->l('Contenu prêt pour ChatGPT, Google SGE et les réponses générées par IA.'),
+            'fexa_f5t' => $this->l('Fichier /llms.txt (nouveau)'),
+            'fexa_f5d' => $this->l('Une carte de votre boutique lisible par les IA, générée depuis votre catalogue et servie automatiquement à la racine (/llms.txt).'),
+            'fexa_key_title' => $this->l('Votre clé API'),
+            'fexa_key_help' => $this->l('Copiez cette clé et collez-la dans votre tableau de bord Fexa AI pour connecter votre boutique.'),
+            'fexa_copy' => $this->l('Copier la clé'),
+            'fexa_api_key' => (string) Configuration::get('FEXA_AI_API_KEY'),
+            'fexa_schema_title' => $this->l('Données structurées (JSON-LD)'),
+            'fexa_schema_intro' => $this->l('Choisissez les schémas que Fexa injecte. Astuce : la plupart des thèmes PrestaShop émettent déjà Product et Fil d\'Ariane — les laisser désactivés évite les doublons qui peuvent nuire au SEO. FAQ est unique à Fexa, gardez-le activé.'),
+            'fexa_lbl_faq' => $this->l('FAQ (FAQPage) — recommandé, unique à Fexa'),
+            'fexa_lbl_product' => $this->l('Produit (Product) — à activer seulement si votre thème ne le fournit pas'),
+            'fexa_lbl_breadcrumb' => $this->l('Fil d\'Ariane (BreadcrumbList) — à activer seulement si votre thème ne le fournit pas'),
+            'fexa_save_lbl' => $this->l('Enregistrer'),
+            'fexa_saved_lbl' => $this->l('Réglages enregistrés.'),
+            'fexa_schema_saved' => $schemaSaved,
+            'fexa_emit_faq' => $this->isSchemaEnabled('FAQPage'),
+            'fexa_emit_product' => $this->isSchemaEnabled('Product'),
+            'fexa_emit_breadcrumb' => $this->isSchemaEnabled('BreadcrumbList'),
+        ]);
 
-        $schemaTitle = $this->l('Données structurées (JSON-LD)');
-        $schemaIntro = $this->l('Choisissez les schémas que Fexa injecte. Astuce : la plupart des thèmes PrestaShop émettent déjà Product et Fil d\'Ariane — les laisser désactivés évite les doublons qui peuvent nuire au SEO. FAQ est unique à Fexa, gardez-le activé.');
-        $lblFaq = $this->l('FAQ (FAQPage) — recommandé, unique à Fexa');
-        $lblProduct = $this->l('Produit (Product) — à activer seulement si votre thème ne le fournit pas');
-        $lblBreadcrumb = $this->l('Fil d\'Ariane (BreadcrumbList) — à activer seulement si votre thème ne le fournit pas');
-        $saveLbl = $this->l('Enregistrer');
-        $savedLbl = $this->l('Réglages enregistrés.');
-        $savedHtml = $schemaSaved ? '<div style="background:#dcfce7;color:#065f46;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-weight:600;">✅ ' . $savedLbl . '</div>' : '';
-
-        $apiKey = (string) Configuration::get('FEXA_AI_API_KEY');
-        $safeKey = htmlspecialchars($apiKey, ENT_QUOTES, 'UTF-8');
-
-        $intro = $this->l('Optimisez automatiquement votre boutique pour le SEO ET la recherche vocale (Google Assistant, Alexa, Siri) grâce à l\'IA : descriptions, méta, balises ALT, données structurées et fichier /llms.txt prêts pour les moteurs de réponse.');
-        $access = $this->l('Accéder à Fexa AI');
-        $keyTitle = $this->l('Votre clé API');
-        $keyHelp = $this->l('Copiez cette clé et collez-la dans votre tableau de bord Fexa AI pour connecter votre boutique.');
-        $copy = $this->l('Copier la clé');
-
-        $featTitle = $this->l('Ce que Fexa AI optimise pour vous');
-        $f1t = $this->l('Recherche vocale (AEO)');
-        $f1d = $this->l('Balisage Speakable + FAQ pour être lu à voix haute par les assistants vocaux.');
-        $f2t = $this->l('Données structurées');
-        $f2d = $this->l('JSON-LD Produit, FAQ et fil d\'Ariane injectés automatiquement (rich snippets Google).');
-        $f3t = $this->l('SEO automatisé par IA');
-        $f3d = $this->l('Titres, méta-descriptions, descriptions et balises ALT réécrits et optimisés.');
-        $f4t = $this->l('Moteurs de réponse IA');
-        $f4d = $this->l('Contenu prêt pour ChatGPT, Google SGE et les réponses générées par IA.');
-        $f5t = $this->l('Fichier /llms.txt (nouveau)');
-        $f5d = $this->l('Une carte de votre boutique lisible par les IA, générée depuis votre catalogue et servie automatiquement à la racine (/llms.txt).');
-
-        return <<<HTML
-<div style="background:linear-gradient(135deg,#10b981 0%,#059669 100%);border-radius:16px;padding:32px;margin-bottom:24px;color:#fff;box-shadow:0 10px 40px rgba(16,185,129,.3);">
-  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;">
-    <div style="flex:1;min-width:300px;">
-      <h1 style="margin:0 0 12px 0;font-size:2em;font-weight:800;">🚀 Fexa AI Connector</h1>
-      <p style="font-size:1.1em;opacity:.95;margin:0;line-height:1.6;">{$intro}</p>
-    </div>
-    <a href="https://fexaai.com" target="_blank" rel="noopener noreferrer" style="display:inline-block;background:#fff;color:#059669;padding:16px 32px;border-radius:12px;text-decoration:none;font-weight:700;">🌐 {$access}</a>
-  </div>
-</div>
-<div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;border:1px solid #e5e7eb;box-shadow:0 4px 20px rgba(0,0,0,.06);">
-  <h3 style="color:#059669;margin:0 0 20px 0;">✨ {$featTitle}</h3>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;">
-    <div style="background:#f0fdf4;border-radius:12px;padding:18px;border:1px solid #bbf7d0;">
-      <div style="font-weight:700;color:#065f46;margin-bottom:6px;">🎙️ {$f1t}</div>
-      <div style="color:#4b5563;font-size:.95em;line-height:1.5;">{$f1d}</div>
-    </div>
-    <div style="background:#f0fdf4;border-radius:12px;padding:18px;border:1px solid #bbf7d0;">
-      <div style="font-weight:700;color:#065f46;margin-bottom:6px;">📊 {$f2t}</div>
-      <div style="color:#4b5563;font-size:.95em;line-height:1.5;">{$f2d}</div>
-    </div>
-    <div style="background:#f0fdf4;border-radius:12px;padding:18px;border:1px solid #bbf7d0;">
-      <div style="font-weight:700;color:#065f46;margin-bottom:6px;">🤖 {$f3t}</div>
-      <div style="color:#4b5563;font-size:.95em;line-height:1.5;">{$f3d}</div>
-    </div>
-    <div style="background:#f0fdf4;border-radius:12px;padding:18px;border:1px solid #bbf7d0;">
-      <div style="font-weight:700;color:#065f46;margin-bottom:6px;">💬 {$f4t}</div>
-      <div style="color:#4b5563;font-size:.95em;line-height:1.5;">{$f4d}</div>
-    </div>
-    <div style="background:#ecfdf5;border-radius:12px;padding:18px;border:1px solid #6ee7b7;">
-      <div style="font-weight:700;color:#065f46;margin-bottom:6px;">📄 {$f5t}</div>
-      <div style="color:#4b5563;font-size:.95em;line-height:1.5;">{$f5d}</div>
-    </div>
-  </div>
-</div>
-<div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;border:2px solid #10b981;box-shadow:0 4px 20px rgba(0,0,0,.08);">
-  <h3 style="color:#059669;margin:0 0 12px 0;">🔑 {$keyTitle}</h3>
-  <p style="color:#4b5563;margin:0 0 16px 0;">{$keyHelp}</p>
-  <input id="fexa-api-key" type="text" readonly value="{$safeKey}" onclick="this.select()" style="width:100%;background:#f3f4f6;padding:14px 18px;font-size:1.1em;border-radius:10px;border:1px solid #e5e7eb;font-family:monospace;color:#1f2937;box-sizing:border-box;"/>
-  <button type="button" class="btn btn-primary" style="margin-top:16px;" onclick="var e=document.getElementById('fexa-api-key');e.select();document.execCommand('copy');this.innerHTML='✅';">📋 {$copy}</button>
-</div>
-<div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;border:1px solid #e5e7eb;box-shadow:0 4px 20px rgba(0,0,0,.06);">
-  <h3 style="color:#059669;margin:0 0 8px 0;">📊 {$schemaTitle}</h3>
-  <p style="color:#4b5563;margin:0 0 16px 0;line-height:1.6;">{$schemaIntro}</p>
-  {$savedHtml}
-  <form method="post" action="">
-    <label style="display:flex;align-items:center;gap:10px;padding:10px 0;color:#1f2937;font-weight:600;">
-      <input type="checkbox" name="emit_faqpage" value="1" {$emitFaqChk}/> {$lblFaq}
-    </label>
-    <label style="display:flex;align-items:center;gap:10px;padding:10px 0;color:#1f2937;font-weight:600;">
-      <input type="checkbox" name="emit_product" value="1" {$emitProductChk}/> {$lblProduct}
-    </label>
-    <label style="display:flex;align-items:center;gap:10px;padding:10px 0;color:#1f2937;font-weight:600;">
-      <input type="checkbox" name="emit_breadcrumb" value="1" {$emitBreadcrumbChk}/> {$lblBreadcrumb}
-    </label>
-    <button type="submit" name="submitFexaSchemas" value="1" class="btn btn-primary" style="margin-top:16px;">💾 {$saveLbl}</button>
-  </form>
-</div>
-HTML;
+        return $this->display(__FILE__, 'views/templates/admin/configure.tpl');
     }
 
     public static function getConfig(): array

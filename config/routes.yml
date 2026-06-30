@@ -1,5 +1,6 @@
-admin_fexa_ai_connector_config:
-  path: /fexa_ai_connector/config
-  controller: "PrestaShop\\Module\\FexaAiConnector\\Controller\\Admin\\FexaAiConfigController::index"
-  methods: [GET, POST]
-
+# No Symfony admin routes.
+#
+# The module's configuration page is served by Module::getContent() (legacy module
+# config), which renders identically on PrestaShop 1.7.8 / 8 / 9 and needs no Symfony
+# admin controller. The MCP server + /llms.txt front endpoints are registered via the
+# moduleRoutes hook in fexa_ai_connector.php, not here.
