@@ -410,7 +410,7 @@ class Fexa_ai_connector extends Module
             return '';
         }
 
-        $out = '';
+        $blocks = [];
         foreach ($rows as $row) {
             // Skip schema types the merchant disabled (e.g. Product / BreadcrumbList already
             // emitted natively by the theme) to avoid duplicate JSON-LD nodes that hurt SEO.
@@ -418,11 +418,16 @@ class Fexa_ai_connector extends Module
                 continue;
             }
             // Prevent premature </script> termination (the only way JSON-LD could break out).
-            $safe = str_replace('</', '<\\/', (string) $row['jsonld']);
-            $out .= '<script type="application/ld+json">' . $safe . '</script>' . "\n";
+            $blocks[] = str_replace('</', '<\\/', (string) $row['jsonld']);
         }
 
-        return $out;
+        if (0 === count($blocks)) {
+            return '';
+        }
+
+        $this->context->smarty->assign('fexa_jsonld_blocks', $blocks);
+
+        return $this->display(__FILE__, 'views/templates/hook/structured_data.tpl');
     }
 
     /**
