@@ -1,0 +1,15 @@
+# Enforce LF line endings on all text files regardless of the OS / core.autocrlf,
+# so the packaged module always satisfies the PrestaShop validator's `line_ending` rule.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending normalised.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.zip binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
