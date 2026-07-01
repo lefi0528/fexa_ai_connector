@@ -31,10 +31,6 @@ class Fexa_ai_connector extends Module
     public $emailSupport;
     public $termsOfServiceUrl;
 
-    public const GITHUB_REPO = 'lefi0528/fexa_ai_connector';
-    public const UPDATE_CHECK_CACHE_KEY = 'FEXA_AI_LATEST_VERSION';
-    public const UPDATE_CHECK_CACHE_TTL = 86400; // 24h
-
     public function __construct()
     {
         $this->name = 'fexa_ai_connector';
@@ -45,8 +41,7 @@ class Fexa_ai_connector extends Module
         $this->version = '3.6.8';
         // PrestaShop Addons product key. Paste the key generated on your Addons product
         // page here before uploading the zip to the Marketplace; it drives back-office
-        // update notifications for merchants who install from Addons. Left empty for the
-        // GitHub-distributed build (which self-checks releases via checkVersion()).
+        // update notifications for merchants who install from Addons.
         $this->module_key = '';
 
         parent::__construct();
@@ -109,9 +104,7 @@ class Fexa_ai_connector extends Module
             && Configuration::deleteByName('FEXA_AI_EMIT_FAQPAGE')
             && Configuration::deleteByName('FEXA_AI_EMIT_PRODUCT')
             && Configuration::deleteByName('FEXA_AI_EMIT_BREADCRUMB')
-            && Configuration::deleteByName('FEXA_AI_API_KEY')
-            && Configuration::deleteByName(self::UPDATE_CHECK_CACHE_KEY)
-            && Configuration::deleteByName(self::UPDATE_CHECK_CACHE_KEY . '_TS');
+            && Configuration::deleteByName('FEXA_AI_API_KEY');
     }
 
     public function upgrade($version): bool
@@ -119,55 +112,6 @@ class Fexa_ai_connector extends Module
         Configuration::updateValue('FEXA_AI_SERVER_FIRST_DISCOVERY_DONE', false);
 
         return true;
-    }
-
-    /**
-     * Called by PrestaShop's module update checker.
-     * Returns the latest available version from GitHub Releases.
-     */
-    public function checkVersion(): string
-    {
-        $cachedVersion = Configuration::get(self::UPDATE_CHECK_CACHE_KEY);
-        $cachedTs = (int) Configuration::get(self::UPDATE_CHECK_CACHE_KEY . '_TS');
-
-        if ($cachedVersion && (time() - $cachedTs) < self::UPDATE_CHECK_CACHE_TTL) {
-            return $cachedVersion;
-        }
-
-        try {
-            $url = 'https://api.github.com/repos/' . self::GITHUB_REPO . '/releases/latest';
-            $opts = [
-                'http' => [
-                    'method' => 'GET',
-                    'header' => "User-Agent: PrestaShop-Module-FexaAI\r\n",
-                    'timeout' => 5,
-                ],
-            ];
-            $context = stream_context_create($opts);
-            $response = @file_get_contents($url, false, $context);
-
-            if ($response) {
-                $data = json_decode($response, true);
-                $latestVersion = ltrim($data['tag_name'] ?? $this->version, 'v');
-
-                Configuration::updateValue(self::UPDATE_CHECK_CACHE_KEY, $latestVersion);
-                Configuration::updateValue(self::UPDATE_CHECK_CACHE_KEY . '_TS', time());
-
-                return $latestVersion;
-            }
-        } catch (Exception $e) {
-            // Silently fail — return current version to avoid false update alerts
-        }
-
-        return $this->version;
-    }
-
-    /**
-     * Returns the download URL for the latest release ZIP from GitHub.
-     */
-    public function getUpdateUrl(): string
-    {
-        return 'https://github.com/' . self::GITHUB_REPO . '/releases/latest/download/fexa_ai_connector.zip';
     }
 
     public function isMcpCompliant(): bool
