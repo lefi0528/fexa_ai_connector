@@ -42,7 +42,12 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.6.7';
+        $this->version = '3.6.8';
+        // PrestaShop Addons product key. Paste the key generated on your Addons product
+        // page here before uploading the zip to the Marketplace; it drives back-office
+        // update notifications for merchants who install from Addons. Left empty for the
+        // GitHub-distributed build (which self-checks releases via checkVersion()).
+        $this->module_key = '';
 
         parent::__construct();
 
