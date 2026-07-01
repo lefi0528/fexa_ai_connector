@@ -42,7 +42,7 @@ class Fexa_ai_connector extends Module
         $this->tab = 'seo';
         $this->need_instance = 0;
         $this->bootstrap = true;
-        $this->version = '3.6.6';
+        $this->version = '3.6.7';
 
         parent::__construct();
 
@@ -410,26 +410,35 @@ class Fexa_ai_connector extends Module
             return '';
         }
 
-        // JSON-LD is emitted directly from PHP, by design — NOT via a Smarty template.
-        // A templated variable cannot satisfy the validator here: HTML-escaping the payload
-        // corrupts it (the structural double quotes turn into entities, and a ld+json script
-        // element's content is raw text the browser never HTML-decodes, so crawlers receive
-        // invalid JSON), while a non-filtered Smarty output trips the variable-escaping
-        // Security rule. The payload is instead sanitised against the only real way it could
-        // break out — a premature closing of the script element — keeping it valid and safe.
-        $out = '';
+        // JSON-LD is rendered through a Smarty template (so the module ships no HTML in PHP).
+        // The payload is passed through the `fexajsonld` modifier (views/smarty-plugins/), which
+        // neutralises the only breakout vector — a premature closing sequence — while keeping the
+        // JSON valid. HTML-escaping is NOT used: a ld+json script's content is raw text the browser
+        // never HTML-decodes, so entity-encoding would corrupt it for crawlers. The same sanitising
+        // is also applied here in PHP as a defence-in-depth safety net (the modifier is idempotent).
+        $blocks = [];
         foreach ($rows as $row) {
             // Skip schema types the merchant disabled (e.g. Product / BreadcrumbList already
             // emitted natively by the theme) to avoid duplicate JSON-LD nodes that hurt SEO.
             if (!$this->isSchemaEnabled((string) $row['schema_type'])) {
                 continue;
             }
-            // Neutralise a premature closing of the script element (the only JSON-LD breakout vector).
-            $safe = str_replace('</', '<\\/', (string) $row['jsonld']);
-            $out .= '<script type="application/ld+json">' . $safe . '</script>' . "\n";
+            $blocks[] = str_replace('</', '<\\/', (string) $row['jsonld']);
         }
 
-        return $out;
+        if (0 === count($blocks)) {
+            return '';
+        }
+
+        try {
+            $this->context->smarty->addPluginsDir($this->local_path . 'views/smarty-plugins/');
+            $this->context->smarty->assign('fexa_jsonld_blocks', $blocks);
+
+            return $this->display(__FILE__, 'views/templates/hook/structured_data.tpl');
+        } catch (Throwable $e) {
+            // Fail safe: never break the page head if template/modifier rendering fails.
+            return '';
+        }
     }
 
     /**
