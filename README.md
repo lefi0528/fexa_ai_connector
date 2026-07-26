@@ -42,8 +42,10 @@ Connect your store in one click and let AI automatically improve your SEO, struc
 1. Download the latest release `.zip` from the [Releases page](https://github.com/lefi0528/fexa_ai_connector/releases/latest).
 2. Go to your PrestaShop Admin Panel → **Modules → Module Manager**.
 3. Click **"Upload a module"** and select the zip file.
-4. Open the module's **Configure** page to get your API Key.
-5. Paste the API Key into your [Fexa AI Dashboard](https://fexaai.com) to connect your store.
+4. Open the module's **Configure** page and click **"Connect to Fexa AI"** — a short verification code appears.
+5. On [Fexa AI](https://fexaai.com), enter that code and confirm: your store is connected in one click (your API key never travels through a URL).
+
+> **Prefer the manual method?** On the Configure page, click **"Copy the key"** and paste it into your Fexa AI dashboard instead.
 
 ## Requirements
 
