@@ -10,5 +10,9 @@
  * @license   Proprietary
  *}
 {foreach from=$fexa_jsonld_blocks item=fexa_block}
-<script type="application/ld+json">{$fexa_block|fexajsonld}</script>
+{* `nofilter` is REQUIRED: PrestaShop's Smarty auto-escapes every {$var} to htmlall by
+   default, which would turn the JSON-LD quotes into &quot; and break the JSON for crawlers
+   (Google/AI can't parse it). The fexajsonld modifier already neutralises the only breakout
+   vector (</ -> <\/), so the raw output is safe. *}
+<script type="application/ld+json">{$fexa_block|fexajsonld nofilter}</script>
 {/foreach}
