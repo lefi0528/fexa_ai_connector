@@ -57,6 +57,10 @@ Connect your store in one click and let AI automatically improve your SEO, struc
 - 🌐 Website: [fexaai.com](https://fexaai.com)
 - 📥 Module page: [fexaai.com/module-prestashop-ia](https://fexaai.com/module-prestashop-ia)
 
+## Development
+
+Designed and built by [Lefi Abdelmonem](https://lefi-abdelmonem.com/), PrestaShop expert. The core module — MCP server, SEO tooling, structured data — was written solo from the [initial release](https://github.com/lefi0528/fexa_ai_connector/commit/2afb97ce3adeba4fc202426ce3cf08fc7f9d093c) in February 2026 through the [v3.5.1 milestone](https://github.com/lefi0528/fexa_ai_connector/commit/a1b73f6745e77b1415ff2da29d1123650fdc4f59) in June 2026 ([full history](https://github.com/lefi0528/fexa_ai_connector/commits/main?since=2026-02-01&until=2026-06-04)), before AI pair-programming joined the workflow for later iterations.
+
 ## Contributing
 
 This is a proprietary module developed by Fexa AI.
